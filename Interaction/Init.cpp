@@ -9,6 +9,11 @@ void uart7_debug_callback(uint8_t *buffer, uint16_t length)
     robot.debug_tools_.VofaReceiveCallback(buffer, length);
 }
 
+void uart5_debug_callback(uint8_t *buffer, uint16_t length)
+{
+    robot.dr16_.RxCpltCallback(buffer, length);
+}
+
 /**
  * @brief CAN1回调函数
  *
@@ -73,6 +78,8 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
 
 void Init()
 {
+    // UART5 初始化，调试
+    uart_init(&huart5, uart5_debug_callback, UART_BUFFER_SIZE);
     // USART7 初始化，调试
     uart_init(&huart7, uart7_debug_callback, UART_BUFFER_SIZE);
     // CAN1 初始化，控制底盘
