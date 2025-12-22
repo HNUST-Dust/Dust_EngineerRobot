@@ -1,10 +1,5 @@
-//
-// Created by noe on 25-8-3.
-//
-
 #include "Init.h"
 #include "Robot.h"
-#include "dvc_MCU_comm.h"
 #include "bsp_usart.h"
 
 Robot robot;
@@ -13,6 +8,7 @@ void uart7_debug_callback(uint8_t *buffer, uint16_t length)
 {
     robot.debug_tools_.VofaReceiveCallback(buffer, length);
 }
+
 /**
  * @brief CAN1回调函数
  *
@@ -43,7 +39,7 @@ void can1_callback(CanRxBuffer *CAN_RxMessage)
             break;
         }
         default:
-        break;
+            break;
     }
 }
 
@@ -60,6 +56,7 @@ void can2_callback(CanRxBuffer *CAN_RxMessage)
             break;
     }
 }
+
 /**
  * @brief CAN3回调函数
  *
@@ -73,7 +70,6 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
             break;
     }
 }
-
 
 void Init()
 {

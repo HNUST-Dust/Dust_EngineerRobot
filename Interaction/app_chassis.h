@@ -33,6 +33,8 @@ public:
     void Exit();
     inline void SetTargetVxInGimbal(float target_vx);
     inline void SetTargetVyInGimbal(float target_vy);
+    inline void SetTargetVxInChassis(float target_vx);
+    inline void SetTargetVyInChassis(float target_vy);
     inline void SetTargetVelocityRotation(float target_velocity_rotation);
     inline void SetYawAngle(float yaw_angle);
 protected:
@@ -72,6 +74,27 @@ inline void Chassis::SetTargetVyInGimbal(float target_vy)
 {
     target_vy_in_gimbal_ = target_vy;
 }
+
+/**
+ * @brief 设定目标速度X
+ *
+ * @param target_velocity_x 目标速度X
+ */
+inline void Chassis::SetTargetVxInChassis(float target_vx)
+{
+    target_vx_in_chassis_ = target_vx;
+}
+
+/**
+ * @brief 设定目标速度Y
+ *
+ * @param target_velocity_y 目标速度Y
+ */
+inline void Chassis::SetTargetVyInChassis(float target_vy)
+{
+    target_vy_in_chassis_ = target_vy;
+}
+
 
 /**
  * @brief 设定目标速度旋转
