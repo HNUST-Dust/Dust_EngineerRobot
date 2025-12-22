@@ -1,0 +1,9 @@
+{
+    "clangd.diagnostics.enabled": false,
+    "files.associations": {
+        "xiosbase": "cpp",
+        "cstdint": "cpp",
+        "cmath": "cpp"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
+}
