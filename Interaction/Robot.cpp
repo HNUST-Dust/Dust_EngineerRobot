@@ -46,7 +46,6 @@ void Robot::TaskEntry(void *argument)
 
 void Robot::Task()
 {
-
     for (;;)
     {
         __disable_irq();
