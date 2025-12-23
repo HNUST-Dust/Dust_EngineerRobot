@@ -14,11 +14,6 @@ void uart5_debug_callback(uint8_t *buffer, uint16_t length)
     robot.dr16_.RxCpltCallback(buffer, length);
 }
 
-/**
- * @brief CAN1回调函数
- *
- * @param CAN_RxMessage CAN1收到的消息
- */
 void can1_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
@@ -48,11 +43,6 @@ void can1_callback(CanRxBuffer *CAN_RxMessage)
     }
 }
 
-/**
- * @brief CAN2回调函数
- *
- * @param CAN_RxMessage CAN2收到的消息
- */
 void can2_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
@@ -62,11 +52,6 @@ void can2_callback(CanRxBuffer *CAN_RxMessage)
     }
 }
 
-/**
- * @brief CAN3回调函数
- *
- * @param CAN_RxMessage CAN3收到的消息
- */
 void can3_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
@@ -78,7 +63,7 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
 
 void Init()
 {
-    // UART5 初始化，调试
+    // UART5 初始化，DR16接收机
     uart_init(&huart5, uart5_debug_callback, UART_BUFFER_SIZE);
     // USART7 初始化，调试
     uart_init(&huart7, uart7_debug_callback, UART_BUFFER_SIZE);
