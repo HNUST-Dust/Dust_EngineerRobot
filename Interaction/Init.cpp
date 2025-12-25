@@ -18,6 +18,10 @@ void can1_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
     {
+        case (0x000):
+        {
+            break;
+        }
         case (0x201):
         {
             robot.chassis_.motor_chassis_1_.CanRxCpltCallback(CAN_RxMessage->data);
@@ -67,9 +71,9 @@ void Init()
     uart_init(&huart5, uart5_debug_callback, UART_BUFFER_SIZE);
     // USART7 初始化，调试
     uart_init(&huart7, uart7_debug_callback, UART_BUFFER_SIZE);
-    // CAN1 初始化，控制底盘
+    // CAN1 初始化，控制底盘 + 一个龙门架抬升电机
     can_init(&hfdcan1,can1_callback);
-    // CAN2 初始化，控制龙门架
+    // CAN2 初始化，控制龙门架 - 一个龙门架抬升电机
     can_init(&hfdcan2,can2_callback);
     // CAN3 初始化，控制机械臂
     can_init(&hfdcan3,can3_callback);

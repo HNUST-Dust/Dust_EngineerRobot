@@ -150,6 +150,7 @@ void MotorCubemars::DataProcess()
     // 存储预备信息
     rx_data_.pre_encoder = tmp_encoder;
 }
+
 //发包时所有的数都要经以下函数转化成整型数之后再发给电机。 
 int float_to_uint(float x, float x_min, float x_max, unsigned int bits){
     /// Converts a float to an unsigned int, given range and number of bits 
@@ -199,13 +200,15 @@ void MotorCubemars::pack_cmd(float p_des, float v_des, float kp, float kd, float
     tx_data_[7] = t_int&0xff; //扭矩低 8 位
 
     can_send_data(can_manage_object_->can_handler, can_tx_id_, tx_data_, 8);
+}
+
+void MotorCubemars::PidCalculate() {
 
 }
 
+void MotorCubemars::CalculatePeriodElapsedCallback() {
+    PidCalculate();
 
-void MotorCubemars::SendPeriodElapsedCallback()
-{
-    // 电机在线, 正常控制
     math_constrain(&control_angle_, -angle_max_, angle_max_);
     math_constrain(&control_omega_, -omega_max_, omega_max_);
     math_constrain(&control_torque_, -torque_max_, torque_max_);
@@ -214,13 +217,6 @@ void MotorCubemars::SendPeriodElapsedCallback()
 
     //pack_cmd(control_angle_,control_omega_,k_p_,k_d_,control_torque_);
     Output();
-}
-void PidCalculate() {
-
-}
-
-void CalculatePeriodElapsedCallback() {
-
 }
 
 //收包时所有的数都要经以下函数转化成浮点型。 

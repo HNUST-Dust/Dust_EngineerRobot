@@ -2,6 +2,7 @@
 #define APP_ROBOT_H_
 // app
 #include "app_chassis.h"
+#include "app_gantry.h"
 // module
 #include "debug_tools.h"
 #include "dr16.h"
@@ -20,6 +21,8 @@ public:
     DR16 dr16_;
     // 底盘
     Chassis chassis_;
+    // 龙门架
+    Gantry gantry_;
 
     void Init();
     void Task();

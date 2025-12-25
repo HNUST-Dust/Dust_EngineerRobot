@@ -21,7 +21,7 @@
  * x
  * ^
  * |
- * + - > y
+ * + —— > y
  */
 
 class Chassis
