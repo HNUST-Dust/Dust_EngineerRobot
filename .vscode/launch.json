@@ -5,7 +5,7 @@
         {
             "name": "DAPlink-launch",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/build/Dust_InfantryRobotChassis.elf",
+            "executable": "${workspaceRoot}/build/Dust_EngineerRobot.elf",
             "request": "launch",
             "type": "cortex-debug",
             "device": "STM32H723VG",
@@ -25,7 +25,7 @@
         {
             "name": "Jlink",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceRoot}/build/Dust_InfantryRobotChassis.elf",
+            "executable": "${workspaceRoot}/build/Dust_EngineerRobot.elf",
             "request": "launch",
             "type": "cortex-debug",
             "device": "STM32H723VG",
@@ -40,7 +40,7 @@
         {
             "name": "DAP-attach",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/build/Dust_InfantryRobotChassis.elf", 
+            "executable": "${workspaceRoot}/build/Dust_EngineerRobot.elf", 
             "request": "attach",
             "type": "cortex-debug",
             "device": "STM32H723VG",
@@ -58,7 +58,7 @@
         {
             "name": "Jlink-attach",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceRoot}/build/Dust_InfantryRobotChassis.elf",
+            "executable": "${workspaceRoot}/build/Dust_EngineerRobot.elf",
             "request": "attach",
             "type": "cortex-debug",
             "device": "STM32H723VG",

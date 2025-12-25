@@ -17,6 +17,12 @@
 #include "dvc_motor_dji.h"
 #include "imu.hpp"
 
+/**
+ * x
+ * ^
+ * |
+ * + - > y
+ */
 
 class Chassis
 {

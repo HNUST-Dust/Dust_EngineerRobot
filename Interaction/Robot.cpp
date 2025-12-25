@@ -52,10 +52,12 @@ void Robot::Task()
         __enable_irq();
 
         /********************** 底盘 ***********************/ 
-        chassis_.SetTargetVxInChassis((dr16_.GetRawData()->channel0 - 660.0f) * CHASSIS_SPEED / 128.0f); //9
-        chassis_.SetTargetVyInChassis((660.0f - dr16_.GetRawData()->channel1) * CHASSIS_SPEED / 128.0f); //9
+        // chassis_.SetTargetVxInChassis((dr16_.GetRawData()->channel0 - 660.0f) * CHASSIS_SPEED / 660.0f); //9
+        // chassis_.SetTargetVyInChassis((660.0f - dr16_.GetRawData()->channel1) * CHASSIS_SPEED / 660.0f); //9
         // chassis_.SetTargetVelocityRotation(((127.0f - dr16_.GetRawData()->channel2) * CHASSIS_SPEED / 128.0f));
-    
+        chassis_.SetTargetVxInChassis(0); //9
+        chassis_.SetTargetVyInChassis(0); //9
+
         /********************** 调试信息 ***********************/   
         
         // // 调试帧尾部
