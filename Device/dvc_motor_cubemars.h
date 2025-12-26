@@ -115,7 +115,7 @@ protected:
     float torque_max_;
     
     MotorCubemarsControlMethod control_method_ =
-        TORQUE_CONTROL;
+        ANGLE_CONTROL;
 
     // 角度, rad
     float control_angle_ = 0.0f;

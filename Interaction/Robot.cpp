@@ -18,10 +18,13 @@
 
 // bsp
 #include "bsp_dwt.h"
+#include "projdefs.h"
 
 
 void Robot::Init()
 {
+    osDelay(pdMS_TO_TICKS(2000));
+    
     dwt_init(480);
     debug_tools_.VofaInit();
 
@@ -29,6 +32,8 @@ void Robot::Init()
     dr16_.Init();
     // 底盘初始化
     chassis_.Init();
+    // 龙门架初始化
+    gantry_.Init();
 
     static const osThreadAttr_t kRobotTaskAttr = {
         .name = "robot_task",
@@ -60,9 +65,10 @@ void Robot::Task()
         chassis_.SetTargetVxInChassis(0);
         chassis_.SetTargetVyInChassis(0);
 
-        gantry_.XAxisMove(10);
+        // gantry_.XAxisMove(10);
         // gantry_.YAxisMove(10);
-        gantry_.ZAxisMove(10);
+        gantry_.ZAxisMoveInSpeed(10);
+        // gantry_.XAxisMoveInSpeed(1.0f);
 
         /********************** 调试信息 ***********************/   
         // // 调试帧尾部

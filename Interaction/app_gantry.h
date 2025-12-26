@@ -15,6 +15,9 @@ public:
     void XAxisMove(float distance);
     void YAxisMove(float distance);
     void ZAxisMove(float distance);
+    void XAxisMoveInSpeed(float speed);
+    void ZAxisMoveInSpeed(float speed);
+
 private:
     static void TaskEntry(void *param);
 

@@ -1,15 +1,28 @@
 #include "app_gantry.h"
+#include "dvc_motor_cubemars.h"
 #include "dvc_motor_dji.h"
 #include "cmsis_os2.h"
 #include "cmsis_os.h"
 #include "projdefs.h"
 
 void Gantry::Init() {
-    motor_z_axis_left_.Init(&hfdcan2,0x00,0x01);
-    motor_z_axis_right_.Init(&hfdcan1,0x00,0x01);
-    motor_x_axis_left_.Init(&hfdcan2, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_ANGLE);
-    motor_x_axis_right_.Init(&hfdcan2, MOTOR_DJI_ID_0x202, MOTOR_DJI_CONTROL_METHOD_ANGLE);
-    motor_y_axis_.Init(&hfdcan2, MOTOR_DJI_ID_0x203, MOTOR_DJI_CONTROL_METHOD_ANGLE);
+    
+    motor_z_axis_left_.Init(&hfdcan2,0x00,0x01,ANGLE_CONTROL);
+    motor_z_axis_right_.Init(&hfdcan1,0x00,0x01,ANGLE_CONTROL);
+    motor_z_axis_left_.SetKd(0.5);
+    motor_z_axis_right_.SetKd(0.5);
+
+    motor_x_axis_left_.pid_omega_.Init(1.0f,0.0f,0.0f);
+    motor_x_axis_right_.pid_omega_.Init(1.0f,0.0f,0.0f);
+    motor_y_axis_.pid_omega_.Init(1.0f,0.0f,0.0f);
+
+    motor_x_axis_left_.pid_angle_.Init(5.0f,0.0f,0.1f);
+    motor_x_axis_right_.pid_angle_.Init(5.0f,0.0f,0.1f);
+    motor_y_axis_.pid_angle_.Init(5.0f,0.0f,0.1f);
+    
+    motor_x_axis_left_.Init(&hfdcan2, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_OMEGA);
+    motor_x_axis_right_.Init(&hfdcan2, MOTOR_DJI_ID_0x202, MOTOR_DJI_CONTROL_METHOD_OMEGA);
+    motor_y_axis_.Init(&hfdcan2, MOTOR_DJI_ID_0x203, MOTOR_DJI_CONTROL_METHOD_OMEGA);
 
     motor_z_axis_left_.CanSendSaveZero();
     motor_z_axis_right_.CanSendSaveZero();
@@ -53,6 +66,15 @@ void Gantry::ZAxisMove(float distance) {
     motor_z_axis_right_.SetAngle(-distance);
 }
 
+void Gantry::XAxisMoveInSpeed(float speed) {
+    motor_x_axis_left_.SetTargetOmega(speed);
+    motor_x_axis_right_.SetTargetOmega(-speed);
+}
+
+void Gantry::ZAxisMoveInSpeed(float speed) {
+    motor_z_axis_left_.SetOmega(speed);
+    motor_z_axis_right_.SetOmega(-speed);
+}
 void Gantry::Task() {
     for(;;) {
         motor_x_axis_left_.CalculatePeriodElapsedCallback();
@@ -64,6 +86,6 @@ void Gantry::Task() {
         motor_z_axis_left_.CanSendEnter();
         motor_z_axis_right_.CalculatePeriodElapsedCallback();
         motor_z_axis_right_.CanSendEnter();
-        osDelay(pdMS_TO_TICKS(1)); // 1kHz
+        osDelay(pdMS_TO_TICKS(10)); // 100Hz
     }
 }

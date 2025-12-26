@@ -81,9 +81,7 @@ void MotorCubemars::CanSendSaveZero()
 
 
 void MotorCubemars::Output() {
-    switch (control_method_) {
-        case (TORQUE_CONTROL) :
-        {
+
             MotorCubemarsCanTxData *tmp_buffer = (MotorCubemarsCanTxData *)tx_data_;
             
             uint16_t tmp_angle, tmp_omega, tmp_torque, tmp_k_p, tmp_k_d;
@@ -102,11 +100,7 @@ void MotorCubemars::Output() {
             tmp_buffer->k_d_3_0_control_torque_11_8 = ((tmp_k_d & 0x0f) << 4) | (tmp_torque >> 8);
             tmp_buffer->control_torque_7_0 = tmp_torque & 0xff;
             can_send_data(can_manage_object_->can_handler, can_tx_id_, tx_data_, 8);
-            break;
-        }
-        default:
-            break;
-    }
+
 }
 
 void MotorCubemars::DataProcess()
