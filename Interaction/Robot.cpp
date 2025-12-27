@@ -70,9 +70,10 @@ void Robot::Task()
         gantry_.ZAxisMoveInSpeed(10);
         // gantry_.XAxisMoveInSpeed(1.0f);
 
-        /********************** 调试信息 ***********************/   
+        /********************** 调试信息 ***********************/
+        debug_tools_.VofaSendFloat(static_cast<float>(dr16_.GetRawData()->channel0));
         // // 调试帧尾部
-        // debug_tools_.VofaSendTail();
+        debug_tools_.VofaSendTail();
 
         osDelay(pdMS_TO_TICKS(1));// 1khz
     }

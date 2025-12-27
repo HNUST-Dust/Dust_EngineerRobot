@@ -18,6 +18,7 @@ public:
         int16_t channel3;
         uint8_t switch1;
         uint8_t switch2;
+        int16_t pulley_wheel;
     } __attribute__((packed));
 
     struct RecivedProcessedData {
