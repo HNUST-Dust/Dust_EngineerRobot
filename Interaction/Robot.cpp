@@ -67,7 +67,7 @@ void Robot::Task()
         // chassis_.SetTargetVxInChassis(0);
         // chassis_.SetTargetVyInChassis(0);
 
-        // gantry_.XAxisMove(10);
+        // gantry_.XAxisMove(10); 
         // gantry_.YAxisMove(10);
         // gantry_.ZAxisMoveInSpeed(10);
         // gantry_.XAxisMoveInSpeed(1.0f);

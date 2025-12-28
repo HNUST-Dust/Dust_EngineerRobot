@@ -136,22 +136,28 @@ void Arm::Init() {
 
 
     elbow_joint_yaw_.pid_angle_.Init(
-        1.0f,
-        0.0f,
-        0.0f,
+        30.0f,
+        1.8f,
+        0.002f,
         0.0f,
         29.0f,
         29.0f,
         0.001f
     );
     elbow_joint_yaw_.pid_omega_.Init(
-        1.0f,
-        0.0f,
-        0.0f,
+        0.75f,
+        0.003f,
+        0.001f,
         0.0f,
         9.0f,
         9.0f,
-        0.001f
+        0.001f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        PID_D_First_DISABLE,
+        0.02f
     );
     elbow_joint_yaw_.Init(
         &hfdcan3,
@@ -254,7 +260,7 @@ void Arm::Task() {
     for (;;) {
 
         claws_.CalculatePeriodElapsedCallback();
-        
+
         wrist_joint_left_.CalculatePeriodElapsedCallback();
         wrist_joint_right_.CalculatePeriodElapsedCallback();
         can_send_data(&hfdcan3, 0x200, g_can3_0x200_tx_data, 8);
