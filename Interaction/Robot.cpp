@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2025
  * 
  */
-#include "Robot.h"
-#include "cmsis_os2.h"
-
 // app
+#include "Robot.h"
 #include "app_chassis.h"
+#include "app_arm.h"
+#include "cmsis_os2.h"
 // module
 #include "debug_tools.h"
 
@@ -23,7 +23,7 @@
 
 void Robot::Init()
 {
-    osDelay(pdMS_TO_TICKS(2000));
+    osDelay(pdMS_TO_TICKS(1000));
     
     dwt_init(480);
     debug_tools_.VofaInit();
@@ -32,6 +32,8 @@ void Robot::Init()
     dr16_.Init();
     // 底盘初始化
     chassis_.Init();
+    // 手臂初始化
+    arm_.Init();
     // 龙门架初始化
     gantry_.Init();
 
@@ -62,14 +64,15 @@ void Robot::Task()
         // chassis_.SetTargetVelocityRotation(((127.0f - dr16_.GetRawData()->channel2) * CHASSIS_SPEED / 128.0f));
 
         /********************** 测试用例 ***********************/ 
-        chassis_.SetTargetVxInChassis(0);
-        chassis_.SetTargetVyInChassis(0);
+        // chassis_.SetTargetVxInChassis(0);
+        // chassis_.SetTargetVyInChassis(0);
 
         // gantry_.XAxisMove(10);
         // gantry_.YAxisMove(10);
-        gantry_.ZAxisMoveInSpeed(10);
+        // gantry_.ZAxisMoveInSpeed(10);
         // gantry_.XAxisMoveInSpeed(1.0f);
 
+        arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, 1.0f);
         /********************** 调试信息 ***********************/
         debug_tools_.VofaSendFloat(static_cast<float>(dr16_.GetRawData()->channel0));
         // // 调试帧尾部

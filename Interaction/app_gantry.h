@@ -7,7 +7,7 @@ public:
     MotorCubemars motor_z_axis_right_;
     MotorDjiC620 motor_x_axis_left_;
     MotorDjiC620 motor_x_axis_right_;
-    MotorDjiC620 motor_y_axis_;
+    MotorDjiC610 motor_y_axis_;
 
     void Init();
     void Task();

@@ -3,6 +3,7 @@
 // app
 #include "app_chassis.h"
 #include "app_gantry.h"
+#include "app_arm.h"
 // module
 #include "debug_tools.h"
 #include "dr16.h"
@@ -23,6 +24,8 @@ public:
     Chassis chassis_;
     // 龙门架
     Gantry gantry_;
+    // 机械臂
+    Arm arm_;
 
     void Init();
     void Task();

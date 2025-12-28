@@ -78,6 +78,12 @@ enum MotorDmControlMethod
     MOTOR_DM_CONTROL_METHOD_1_TO_4_ANGLE,
 };
 
+enum MotorDmCloseLoopMode
+{
+    ANGLE_OMEGA_CLOSE_LOOP_MODE = 0,
+    OMEGA_CLOSE_LOOP_MODE,
+};
+
 /**
  * @brief 达妙电机传统模式源数据
  *
@@ -199,11 +205,16 @@ struct MotorDmRxData1to4
 class MotorDmNormal
 {
 public:
-  void Init(FDCAN_HandleTypeDef *hcan,
+    Pid pid_omega_;
+    Pid pid_angle_;
+
+    void Init(FDCAN_HandleTypeDef *hcan,
             uint8_t can_rx_id,
             uint8_t can_tx_id,
             MotorDmControlMethod motor_dm_control_method =
                 MOTOR_DM_CONTROL_METHOD_NORMAL_MIT,
+            MotorDmCloseLoopMode motor_dm_close_loop_mode =
+                ANGLE_OMEGA_CLOSE_LOOP_MODE,
             float angle_max = 12.5f,
             float omega_max = 45.0f,
             float torque_max = 10.0f,
@@ -260,6 +271,10 @@ public:
 
     inline void SetKd(float k_d);
 
+    inline void SetTargetAngle(float target_angle);
+
+    inline void SetTargetOmega(float target_omega);
+
     void CanRxCpltCallback(uint8_t *rx_data_);
 
     void CanSendClearError();
@@ -273,6 +288,8 @@ public:
     void AlivePeriodElapsedCallback();
 
     void SendPeriodElapsedCallback();
+
+    void CalculatePeriodElapsedCallback();
 
     // 单元测试临时添加输出函数
     void Output();
@@ -319,7 +336,8 @@ protected:
 
     // 电机控制方式
     MotorDmControlMethod motor_dm_control_method_ = MOTOR_DM_CONTROL_METHOD_NORMAL_MIT;
-
+    // 电机闭环模式
+    MotorDmCloseLoopMode motor_dm_close_loop_mode_ = ANGLE_OMEGA_CLOSE_LOOP_MODE;
     // 角度, rad, 目标角度
     float control_angle_ = 0.0f;
     // 角速度, rad/s, MIT模式和速度模式是目标角速度, 其余模式是限幅
@@ -333,8 +351,12 @@ protected:
     // k_d_, 0~5, MIT模式有效
     float k_d_ = 0.0f;
 
-    // 内部函数
+    float target_angle_ = 0.0f;
+    float target_omega_ = 0.0f;
 
+
+    // 内部函数
+    void PidCalculate();
     void DataProcess();
 
 
@@ -721,6 +743,15 @@ inline void MotorDmNormal::SetKd(float k_d)
     k_d_ = k_d;
 }
 
+inline void MotorDmNormal::SetTargetAngle(float target_angle)
+{
+    target_angle_ = target_angle;
+}
+
+inline void MotorDmNormal::SetTargetOmega(float target_omega)
+{
+    target_omega_ = target_omega;
+}
 /**
  * @brief 获取电流最大值
  *

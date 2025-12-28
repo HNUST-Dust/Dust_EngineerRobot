@@ -14,15 +14,31 @@ void Gantry::Init() {
 
     motor_x_axis_left_.pid_omega_.Init(1.0f,0.0f,0.0f);
     motor_x_axis_right_.pid_omega_.Init(1.0f,0.0f,0.0f);
-    motor_y_axis_.pid_omega_.Init(1.0f,0.0f,0.0f);
+    motor_y_axis_.pid_omega_.Init(
+        1.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        9.0f,
+        9.0f,
+        0.001f
+    );
 
     motor_x_axis_left_.pid_angle_.Init(5.0f,0.0f,0.1f);
     motor_x_axis_right_.pid_angle_.Init(5.0f,0.0f,0.1f);
-    motor_y_axis_.pid_angle_.Init(5.0f,0.0f,0.1f);
+    motor_y_axis_.pid_angle_.Init(
+        30.0f,
+        0.15f,
+        0.0f,
+        1.0f,
+        29.0f,
+        29.0f,
+        0.001f
+    );
     
     motor_x_axis_left_.Init(&hfdcan2, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_OMEGA);
     motor_x_axis_right_.Init(&hfdcan2, MOTOR_DJI_ID_0x202, MOTOR_DJI_CONTROL_METHOD_OMEGA);
-    motor_y_axis_.Init(&hfdcan2, MOTOR_DJI_ID_0x203, MOTOR_DJI_CONTROL_METHOD_OMEGA);
+    motor_y_axis_.Init(&hfdcan2, MOTOR_DJI_ID_0x203, MOTOR_DJI_CONTROL_METHOD_ANGLE);
 
     motor_z_axis_left_.CanSendSaveZero();
     motor_z_axis_right_.CanSendSaveZero();
@@ -49,7 +65,7 @@ void Gantry::Exit() {
     motor_z_axis_right_.CanSendExit();
     motor_x_axis_left_.SetTargetOmega(0);
     motor_x_axis_right_.SetTargetOmega(0);
-    motor_y_axis_.SetTargetOmega(0);
+    motor_y_axis_.SetTargetAngle(0);
 }
 
 void Gantry::XAxisMove(float distance) {

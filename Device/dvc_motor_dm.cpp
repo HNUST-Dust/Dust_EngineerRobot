@@ -196,8 +196,9 @@ void MotorDmNormal::Init(
     FDCAN_HandleTypeDef *hcan,
     uint8_t can_rx_id,
     uint8_t can_tx_id,
-    enum MotorDmControlMethod motor_dm_control_method,
-    float angle_max, 
+    MotorDmControlMethod motor_dm_control_method,
+    MotorDmCloseLoopMode motor_dm_close_loop_mode,
+    float angle_max,
     float omega_max,
     float torque_max,
     float current_max)
@@ -240,6 +241,7 @@ void MotorDmNormal::Init(
     }
     }
     motor_dm_control_method_ = motor_dm_control_method;
+    motor_dm_close_loop_mode_ = motor_dm_close_loop_mode;
     angle_max_ = angle_max;
     omega_max_ = omega_max;
     torque_max_ = torque_max;
@@ -349,6 +351,33 @@ void MotorDmNormal::SendPeriodElapsedCallback()
         // 电机错误, 发送清除错误帧
         CanSendClearError();
     }
+}
+void MotorDmNormal::PidCalculate() {
+    if (motor_dm_close_loop_mode_ == ANGLE_OMEGA_CLOSE_LOOP_MODE) {
+        // 位置环
+        pid_angle_.SetNow(rx_data_.now_angle_noncumulative);
+        pid_angle_.SetTarget(target_angle_);
+        pid_angle_.CalculatePeriodElapsedCallback();
+
+        // 速度环
+        pid_omega_.SetNow(rx_data_.now_omega);
+        pid_omega_.SetTarget(pid_angle_.GetOut());
+        pid_omega_.CalculatePeriodElapsedCallback();
+    }else if (motor_dm_close_loop_mode_ == OMEGA_CLOSE_LOOP_MODE) {
+        // 速度环
+        pid_omega_.SetNow(rx_data_.now_omega);
+        pid_omega_.SetTarget(target_omega_);
+        pid_omega_.CalculatePeriodElapsedCallback();
+    }
+
+    // 发送出电流
+    control_torque_ = pid_omega_.GetOut();
+}
+
+void MotorDmNormal::CalculatePeriodElapsedCallback() {
+
+    PidCalculate();
+    SendPeriodElapsedCallback();
 }
 
 /**

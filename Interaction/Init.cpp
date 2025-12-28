@@ -20,6 +20,7 @@ void can1_callback(CanRxBuffer *CAN_RxMessage)
     {
         case (0x000):
         {
+            robot.gantry_.motor_z_axis_right_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
         }
         case (0x201):
@@ -51,6 +52,26 @@ void can2_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
     {
+        case (0x00):
+        {
+            robot.gantry_.motor_z_axis_left_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x201):
+        {
+            robot.gantry_.motor_x_axis_left_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x202):
+        {
+            robot.gantry_.motor_x_axis_right_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x203):
+        {
+            robot.gantry_.motor_y_axis_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
         default:
             break;
     }
@@ -60,6 +81,31 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
     {
+        case (0x11):
+        {
+            robot.arm_.claws_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x201):
+        {
+            robot.arm_.wrist_joint_left_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x202):
+        {
+            robot.arm_.wrist_joint_right_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x12):
+        {
+            robot.arm_.elbow_joint_yaw_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x13):
+        {
+            robot.arm_.elbow_joint_pitch_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
         default:
             break;
     }

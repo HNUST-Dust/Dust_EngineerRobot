@@ -12,7 +12,6 @@
 
 #include "dvc_motor_dji.h"
 #include "arm_math.h"
-#include "alg_math.h"
 /* Private macros ------------------------------------------------------------*/
 
 /* Private types -------------------------------------------------------------*/
@@ -232,6 +231,100 @@ uint8_t *allocate_tx_data(
             }
         }
     }
+    else if (hcan == &hfdcan3)
+    {
+        switch (can_id)
+        {
+            case (MOTOR_DJI_ID_0x201):
+            {
+                tmp_tx_data_ptr = &(g_can3_0x200_tx_data[0]);
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x202):
+            {
+                tmp_tx_data_ptr = &(g_can3_0x200_tx_data[2]);
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x203):
+            {
+                tmp_tx_data_ptr = &(g_can3_0x200_tx_data[4]);
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x204):
+            {
+                tmp_tx_data_ptr = &(g_can3_0x200_tx_data[6]);
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x205):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x1ff_tx_data[0]);
+                }
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x206):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x1ff_tx_data[2]);
+                }
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x207):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x1ff_tx_data[4]);
+                }
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x208):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x1ff_tx_data[6]);
+                }
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x209):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x2ff_tx_data[0]);
+                }
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x20A):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x2ff_tx_data[2]);
+                }
+
+                break;
+            }
+            case (MOTOR_DJI_ID_0x20B):
+            {
+                if (dji_motor_driver_version == MOTOR_DJI_GM6020_DRIVER_VERSION_DEFAULT)
+                {
+                    tmp_tx_data_ptr = &(g_can3_0x2ff_tx_data[4]);
+                }
+
+                break;
+            }
+        }
+    }
+
     return (tmp_tx_data_ptr);
 }
 
@@ -258,6 +351,10 @@ void MotorDjiC610::Init(
     else if (hcan->Instance == FDCAN2)
     {
         can_manage_object_ = &g_can2_manage_object;
+    }
+    else if (hcan->Instance == FDCAN3)
+    {
+        can_manage_object_ = &g_can3_manage_object;
     }
     can_rx_id_ = can_rx_id;
     motor_dji_control_method_ = motor_dji_control_method;
@@ -420,6 +517,10 @@ void MotorDjiC620::Init(
     else if (hcan->Instance == FDCAN2)
     {
         can_manage_object_ = &g_can2_manage_object;
+    }
+    else if (hcan->Instance == FDCAN3)
+    {
+        can_manage_object_ = &g_can3_manage_object;
     }
     can_rx_id_ = can_rx_id;
     motor_dji_control_method_ = motor_dji_control_method;
