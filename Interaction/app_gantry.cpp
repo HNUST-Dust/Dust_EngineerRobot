@@ -9,8 +9,8 @@ void Gantry::Init() {
     
     motor_z_axis_left_.Init(&hfdcan2,0x00,0x01,ANGLE_CONTROL);
     motor_z_axis_right_.Init(&hfdcan1,0x00,0x01,ANGLE_CONTROL);
-    motor_z_axis_left_.SetKd(0.5);
-    motor_z_axis_right_.SetKd(0.5);
+    motor_z_axis_left_.SetKd(0.8);
+    motor_z_axis_right_.SetKd(0.8);
 
     motor_x_axis_left_.pid_omega_.Init(1.0f,0.0f,0.0f);
     motor_x_axis_right_.pid_omega_.Init(1.0f,0.0f,0.0f);
