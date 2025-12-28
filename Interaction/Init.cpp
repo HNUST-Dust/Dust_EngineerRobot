@@ -86,12 +86,12 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
             robot.arm_.claws_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
         }
-        case (0x201):
+        case (0x202):
         {
             robot.arm_.wrist_joint_left_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
         }
-        case (0x202):
+        case (0x203):
         {
             robot.arm_.wrist_joint_right_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
