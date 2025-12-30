@@ -58,11 +58,11 @@ void Chassis::RotationMatrixTransform()
 
 void Chassis::KinematicsInverseResolution()
 {
-    motor_chassis_1_.SetTargetOmega( (-0.707107f * target_vx_in_chassis_ + 0.707107f * target_vy_in_chassis_)
+    motor_chassis_1_.SetTargetOmega( (+0.707107f * target_vx_in_chassis_ - 0.707107f * target_vy_in_chassis_)
                                     + (target_velocity_rotation_));
     motor_chassis_2_.SetTargetOmega( (-0.707107f * target_vx_in_chassis_ - 0.707107f * target_vy_in_chassis_)
                                     + (target_velocity_rotation_));
-    motor_chassis_3_.SetTargetOmega( ( 0.707107f * target_vx_in_chassis_ - 0.707107f * target_vy_in_chassis_)
+    motor_chassis_3_.SetTargetOmega( (-0.707107f * target_vx_in_chassis_ + 0.707107f * target_vy_in_chassis_)
                                     + (target_velocity_rotation_));
     motor_chassis_4_.SetTargetOmega( ( 0.707107f * target_vx_in_chassis_ + 0.707107f * target_vy_in_chassis_)
                                     + (target_velocity_rotation_));

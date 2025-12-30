@@ -178,6 +178,61 @@ uint8_t *allocate_tx_data(FDCAN_HandleTypeDef *hcan, enum MotorDmMotorId1To4 can
         }
         }
     }
+    else if (hcan == &hfdcan3)
+    {
+        switch (can_rx_id_1_to_4)
+        {
+        case (MOTOR_DM_ID_0x301):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x3fe_tx_data[0]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x302):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x3fe_tx_data[2]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x303):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x3fe_tx_data[4]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x304):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x3fe_tx_data[6]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x305):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x4fe_tx_data[0]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x306):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x4fe_tx_data[2]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x307):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x4fe_tx_data[4]);
+
+            break;
+        }
+        case (MOTOR_DM_ID_0x308):
+        {
+            tmp_tx_data_ptr = &(g_can3_0x4fe_tx_data[6]);
+
+            break;
+        }
+        }
+    }
+
     return (tmp_tx_data_ptr);
 }
 

@@ -67,11 +67,7 @@ void can2_callback(CanRxBuffer *CAN_RxMessage)
             robot.gantry_.motor_x_axis_right_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
         }
-        case (0x203):
-        {
-            robot.gantry_.motor_y_axis_.CanRxCpltCallback(CAN_RxMessage->data);
-            break;
-        }
+
         default:
             break;
     }
@@ -84,6 +80,11 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
         case (0x11):
         {
             robot.arm_.claws_.CanRxCpltCallback(CAN_RxMessage->data);
+            break;
+        }
+        case (0x201):
+        {
+            robot.gantry_.motor_y_axis_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
         }
         case (0x202):
