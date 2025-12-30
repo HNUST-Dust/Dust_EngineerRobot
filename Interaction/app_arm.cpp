@@ -201,13 +201,20 @@ void Arm::TaskEntry(void *param) {
     arm->Task();
 }
 
+constexpr float Clamp(float value, float min, float max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
 void Arm::ControlClaw(Arm::ClawActions action, float angle) {
+    angle = Clamp(angle, -CLAWS_LIMIT, CLAWS_LIMIT);
     switch (action) {
         case Arm::CLAW_OPEN_ACTION:
-            claws_.SetControlAngle(angle);
+            claws_.SetTargetAngle(angle);
             break;
         case Arm::CLAW_CLOSE_ACTION:
-            claws_.SetControlAngle(-angle);
+            claws_.SetTargetAngle(-angle);
             break;
         default:
             break;
@@ -217,18 +224,22 @@ void Arm::ControlClaw(Arm::ClawActions action, float angle) {
 void Arm::ControlWristJoint(Arm::WristJointActions action, float angle) {
     switch (action) {
         case Arm::WRIST_JOINT_FLIP_UP_ACTION:
+            angle = Clamp(angle, -WRIST_JOINT_FLIP_LIMIT, WRIST_JOINT_FLIP_LIMIT);
             wrist_joint_left_.SetTargetAngle(angle);
             wrist_joint_right_.SetTargetAngle(angle);
             break;
         case Arm::WRIST_JOINT_FLIP_DOWN_ACTION:
+            angle = Clamp(angle, -WRIST_JOINT_FLIP_LIMIT, WRIST_JOINT_FLIP_LIMIT);
             wrist_joint_left_.SetTargetAngle(-angle);
             wrist_joint_right_.SetTargetAngle(-angle);
             break;
         case Arm::WRIST_JOINT_TWIST_LEFT_ACTION:
+            angle = Clamp(angle, -WRIST_JOINT_TWIST_LIMIT, WRIST_JOINT_TWIST_LIMIT);
             wrist_joint_left_.SetTargetAngle(-angle);
             wrist_joint_right_.SetTargetAngle(angle);
             break;
         case Arm::WRIST_JOINT_TWIST_RIGHT_ACTION:
+            angle = Clamp(angle, -WRIST_JOINT_TWIST_LIMIT, WRIST_JOINT_TWIST_LIMIT);
             wrist_joint_left_.SetTargetAngle(angle);
             wrist_joint_right_.SetTargetAngle(-angle);
             break;
@@ -240,15 +251,19 @@ void Arm::ControlWristJoint(Arm::WristJointActions action, float angle) {
 void Arm::ControlElbowJoint(Arm::ElbowJointActions action, float angle) {
     switch (action) {
         case Arm::ELBOW_JOINT_FLIP_UP_ACTION:
+            angle = Clamp(angle, -ELBOW_JOINT_FLIP_LIMIT, ELBOW_JOINT_FLIP_LIMIT);
             elbow_joint_pitch_.SetControlAngle(angle);
             break;
         case Arm::ELBOW_JOINT_FLIP_DOWN_ACTION:
+            angle = Clamp(angle, -ELBOW_JOINT_FLIP_LIMIT, ELBOW_JOINT_FLIP_LIMIT);
             elbow_joint_pitch_.SetControlAngle(-angle);
             break;
         case Arm::ELBOW_JOINT_TWIST_LEFT_ACTION:
+            angle = Clamp(angle, -ELBOW_JOINT_TWIST_LIMIT, ELBOW_JOINT_TWIST_LIMIT);
             elbow_joint_yaw_.SetControlAngle(-angle);
             break;
         case Arm::ELBOW_JOINT_TWIST_RIGHT_ACTION:
+            angle = Clamp(angle, -ELBOW_JOINT_TWIST_LIMIT, ELBOW_JOINT_TWIST_LIMIT);
             elbow_joint_yaw_.SetControlAngle(angle);
             break;
         default:

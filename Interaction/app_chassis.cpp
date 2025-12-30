@@ -79,11 +79,8 @@ void Chassis::OutputToMotor()
 }
 void Chassis::Task()
 {
-
     for (;;)
     {
-        // 旋转矩阵处理
-        //RotationMatrixTransform();
         // 运动学逆解算
         KinematicsInverseResolution();
         // 输出到底盘电机

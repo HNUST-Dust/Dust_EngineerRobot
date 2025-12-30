@@ -12,13 +12,24 @@ public:
     void Init();
     void Task();
     void Exit();
-    void XAxisMove(float distance);
-    void YAxisMove(float distance);
-    void ZAxisMove(float distance);
+
+    void XAxisMoveInDistance(float distance);
+    void YAxisMoveInDistance(float distance);
+    void ZAxisMoveInDistance(float distance);
+
     void XAxisMoveInSpeed(float speed);
+    void YAxisMoveInSpeed(float speed);
     void ZAxisMoveInSpeed(float speed);
 
 private:
+    static constexpr float X_AXIS_DISTANCE_LIMIT = 10.0f; // distance
+    static constexpr float Y_AXIS_DISTANCE_LIMIT = 10.0f; // distance
+    static constexpr float Z_AXIS_DISTANCE_LIMIT = 5.0f;  // distance
+
+    static constexpr float X_AXIS_SPEED_LIMIT = 20.0f; // speed
+    static constexpr float Y_AXIS_SPEED_LIMIT = 20.0f; // speed
+    static constexpr float Z_AXIS_SPEED_LIMIT = 20.0f; // speed
+
     static void TaskEntry(void *param);
 
 };

@@ -53,28 +53,41 @@ void Robot::TaskEntry(void *argument)
 
 void Robot::Task()
 {
+    float wrist_joint_virtual_angle = 0.0f;
+    float elbow_joint_virtual_angle = 0.0f;
+    float gantry_x_virtual_distance = 0.0f;
+    float gantry_y_virtual_distance = 0.0f;
+    float gantry_z_virtual_distance = 0.0f;
+
     for (;;)
     {
         __disable_irq();
         __enable_irq();
 
         /********************** 底盘 ***********************/ 
-        // chassis_.SetTargetVxInChassis((dr16_.GetRawData()->channel0 - 660.0f) * CHASSIS_SPEED / 660.0f); //9
-        // chassis_.SetTargetVyInChassis((660.0f - dr16_.GetRawData()->channel1) * CHASSIS_SPEED / 660.0f); //9
-        // chassis_.SetTargetVelocityRotation(((127.0f - dr16_.GetRawData()->channel2) * CHASSIS_SPEED / 128.0f));
-
+        
         /********************** 测试用例 ***********************/ 
-        // chassis_.SetTargetVxInChassis(0);
-        // chassis_.SetTargetVyInChassis(0);
+        chassis_.SetTargetVxInChassis(+ dr16_.GetData()->left_stick_x * CHASSIS_SPEED);
+        chassis_.SetTargetVyInChassis(- dr16_.GetData()->left_stick_y * CHASSIS_SPEED);
+        chassis_.SetTargetVelocityRotation(dr16_.GetData()->wheel* CHASSIS_SPEED);
 
-        // gantry_.XAxisMove(10); 
-        // gantry_.YAxisMove(10);
-        // gantry_.ZAxisMoveInSpeed(10);
-        // gantry_.XAxisMoveInSpeed(1.0f);
+        // gantry_.XAxisMoveInSpeed(10.f); 
+        // gantry_.YAxisMoveInSpeed(10.f);
+        // gantry_.ZAxisMoveInSpeed(10.f);
 
-        arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, 1.0f);
+        // gantry_.XAxisMoveInDistance(10.f);
+        // gantry_.YAxisMoveInDistance(10.f);
+        // gantry_.ZAxisMoveInDistance(10.f);
+
+        // arm_.ControlClaw(Arm::CLAW_CLOSE_ACTION, 1.f);
+        // arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, 0.0f);
+        // arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_UP_ACTION, 1.f);
+        // arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_DOWN_ACTION, 1.f);
+        // arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_UP_ACTION, 1.f);
+        // arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_DOWN_ACTION, 1.f);
+    
         /********************** 调试信息 ***********************/
-        debug_tools_.VofaSendFloat(static_cast<float>(dr16_.GetRawData()->channel0));
+        debug_tools_.VofaSendFloat(static_cast<float>(dr16_.GetData()->wheel)); // 开关1
         // // 调试帧尾部
         debug_tools_.VofaSendTail();
 

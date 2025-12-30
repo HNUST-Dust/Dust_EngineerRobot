@@ -38,5 +38,11 @@ public:
     void ControlElbowJoint(ElbowJointActions action, float angle);
 
 private:
+    static constexpr float CLAWS_LIMIT = 1.0f;
+    static constexpr float WRIST_JOINT_FLIP_LIMIT = 1.0f;
+    static constexpr float WRIST_JOINT_TWIST_LIMIT = 1.0f;
+    static constexpr float ELBOW_JOINT_FLIP_LIMIT = 1.0f;
+    static constexpr float ELBOW_JOINT_TWIST_LIMIT = 1.0f;
+
     static void TaskEntry(void *param);
 };
