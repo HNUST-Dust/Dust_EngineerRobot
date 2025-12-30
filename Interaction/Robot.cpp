@@ -31,11 +31,11 @@ void Robot::Init()
     // dr16初始化
     dr16_.Init();
     // 底盘初始化
-    // chassis_.Init();
+    chassis_.Init();
     // 手臂初始化
     arm_.Init();
     // 龙门架初始化
-    // gantry_.Init();
+    gantry_.Init();
 
     static const osThreadAttr_t kRobotTaskAttr = {
         .name = "robot_task",
@@ -59,33 +59,67 @@ void Robot::Task()
     float gantry_y_virtual_distance = 0.0f;
     float gantry_z_virtual_distance = 0.0f;
 
-    for (;;)
-    {
+    for (;;) {
         __disable_irq();
         __enable_irq();
 
+        switch (dr16_.GetData()->left_switch) {
+            case 1:
+                // 底盘模式
+                chassis_.SetTargetVxInChassis(+ dr16_.GetData()->left_stick_x * CHASSIS_SPEED);
+                chassis_.SetTargetVyInChassis(- dr16_.GetData()->left_stick_y * CHASSIS_SPEED);
+                chassis_.SetTargetVelocityRotation(dr16_.GetData()->wheel* CHASSIS_SPEED);        
+                break;
+            case 2:
+                // 手臂模式
+                if (dr16_.GetData()->right_stick_x > 0) {
+                    arm_.ControlClaw(Arm::CLAW_CLOSE_ACTION, -dr16_.GetData()->right_stick_x);
+                }else {
+                    arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, 0.0f);
+                }
+                
+                if( dr16_.GetData()->right_stick_y > 0 ) {
+                    arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_UP_ACTION, dr16_.GetData()->right_stick_y * 2);
+                } else {
+                    arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_DOWN_ACTION,-dr16_.GetData()->right_stick_y * 2);
+                }
+                if (dr16_.GetData()->wheel > 0) {
+                    arm_.ControlWristJoint(Arm::WRIST_JOINT_TWIST_RIGHT_ACTION, dr16_.GetData()->wheel);
+                } else {
+                    arm_.ControlWristJoint(Arm::WRIST_JOINT_TWIST_LEFT_ACTION, -dr16_.GetData()->wheel);
+                }
+
+                if (dr16_.GetData()->left_stick_y > 0) {
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_UP_ACTION, dr16_.GetData()->left_stick_y);
+                } else {
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_DOWN_ACTION, -dr16_.GetData()->left_stick_y);
+                }
+                if (dr16_.GetData()->left_stick_x > 0) {
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_TWIST_RIGHT_ACTION, dr16_.GetData()->left_stick_x);
+                } else {
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_TWIST_LEFT_ACTION, -dr16_.GetData()->left_stick_x);
+                }
+                break;
+            case 3:
+                // 龙门架模式
+                gantry_.XAxisMoveInSpeed(dr16_.GetData()->left_stick_y * 10.f); 
+                gantry_.YAxisMoveInSpeed(dr16_.GetData()->left_stick_x * 10.f);
+                gantry_.ZAxisMoveInSpeed(dr16_.GetData()->right_stick_y *10.f);
+                // gantry_.XAxisMoveInDistance(10.f);
+                // gantry_.YAxisMoveInDistance(10.f);
+                // gantry_.ZAxisMoveInDistance(10.f);
+        
+                break;
+            default:
+                break;
+        }
         /********************** 底盘 ***********************/ 
         
         /********************** 测试用例 ***********************/ 
-        // chassis_.SetTargetVxInChassis(+ dr16_.GetData()->left_stick_x * CHASSIS_SPEED);
-        // chassis_.SetTargetVyInChassis(- dr16_.GetData()->left_stick_y * CHASSIS_SPEED);
-        // chassis_.SetTargetVelocityRotation(dr16_.GetData()->wheel* CHASSIS_SPEED);
 
-        gantry_.XAxisMoveInSpeed(dr16_.GetData()->left_stick_x * 10.f); 
-        gantry_.YAxisMoveInSpeed(dr16_.GetData()->left_stick_y * 10.f);
-        gantry_.ZAxisMoveInSpeed(dr16_.GetData()->right_stick_y *10.f);
 
-        // gantry_.XAxisMoveInDistance(10.f);
-        // gantry_.YAxisMoveInDistance(10.f);
-        // gantry_.ZAxisMoveInDistance(10.f);
 
-        // arm_.ControlClaw(Arm::CLAW_CLOSE_ACTION, 1.f);
-        // arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, 0.0f);
-        // arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_UP_ACTION, 1.f);
-        // arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_DOWN_ACTION, 1.f);
-        // arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_UP_ACTION, 1.f);
-        // arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_DOWN_ACTION, 1.f);
-    
+
         /********************** 调试信息 ***********************/
         debug_tools_.VofaSendFloat(static_cast<float>(dr16_.GetData()->left_stick_y)); // 开关1
         // // 调试帧尾部

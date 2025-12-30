@@ -38,7 +38,7 @@ void Gantry::Init() {
     
     motor_x_axis_left_.Init(&hfdcan2, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_OMEGA);
     motor_x_axis_right_.Init(&hfdcan2, MOTOR_DJI_ID_0x202, MOTOR_DJI_CONTROL_METHOD_OMEGA);
-    motor_y_axis_.Init(&hfdcan3, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_ANGLE);
+    motor_y_axis_.Init(&hfdcan3, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_OMEGA);
 
     motor_z_axis_left_.CanSendSaveZero();
     motor_z_axis_right_.CanSendSaveZero();
@@ -119,7 +119,7 @@ void Gantry::Task() {
         can_send_data(&hfdcan2, 0x200, g_can2_0x200_tx_data, 8);
 
         motor_y_axis_.CalculatePeriodElapsedCallback();
-        can_send_data(&hfdcan3, 0x200, g_can3_0x200_tx_data, 8);
+        //can_send_data(&hfdcan3, 0x200, g_can3_0x200_tx_data, 8);
         
         motor_z_axis_left_.CalculatePeriodElapsedCallback();
         motor_z_axis_left_.CanSendEnter();
