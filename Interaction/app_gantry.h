@@ -9,6 +9,8 @@ public:
     MotorDjiC620 motor_x_axis_right_;
     MotorDjiC610 motor_y_axis_;
 
+    float virtual_z_distance_ = 0.0f;
+
     void Init();
     void Task();
     void Exit();
@@ -30,6 +32,7 @@ private:
     static constexpr float Y_AXIS_SPEED_LIMIT = 20.0f; // speed
     static constexpr float Z_AXIS_SPEED_LIMIT = 20.0f; // speed
 
+    
     static void TaskEntry(void *param);
 
 };

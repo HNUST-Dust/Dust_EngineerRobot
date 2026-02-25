@@ -31,6 +31,18 @@ public:
     MotorDmNormal elbow_joint_yaw_;
     MotorDmNormal elbow_joint_pitch_;
 
+    constexpr static float CLAWS_SENSITIVITY = 0.001f;
+    float claws_virtual_angle_ = 0.0f;
+
+    constexpr static float WRIST_SENSITIVITY = 0.002f;
+    float wrist_joint_left_virtual_angle_ = 0.0f;
+    float wrist_joint_right_virtual_angle_ = 0.0f;
+
+    constexpr static float ELBOW_YAW_SENSITIVITY = 0.001f;
+    constexpr static float ELBOW_PITCH_SENSITIVITY = 0.001f;
+    float elbow_yaw_joint_virtual_angle_ = 0.0f;
+    float elbow_pitch_joint_virtual_angle_ = 0.0f;
+
     void Init();
     void Task();
     void ControlClaw(ClawActions action, float angle);
@@ -39,8 +51,10 @@ public:
 
 private:
     static constexpr float CLAWS_LIMIT = 1.0f;
+
     static constexpr float WRIST_JOINT_FLIP_LIMIT = 1.0f;
     static constexpr float WRIST_JOINT_TWIST_LIMIT = 1.0f;
+
     static constexpr float ELBOW_JOINT_FLIP_LIMIT = 1.0f;
     static constexpr float ELBOW_JOINT_TWIST_LIMIT = 1.0f;
 

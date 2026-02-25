@@ -53,15 +53,18 @@ void Robot::TaskEntry(void *argument)
 
 void Robot::Task()
 {
-    float wrist_joint_virtual_angle = 0.0f;
-    float elbow_joint_virtual_angle = 0.0f;
-    float gantry_x_virtual_distance = 0.0f;
-    float gantry_y_virtual_distance = 0.0f;
+    float claws_virtual_angle = 0.0f;
+    float wrist_left_joint_virtual_angle = 0.0f;
+    float wrist_right_joint_virtual_angle = 0.0f;
+    float elbow_yaw_joint_virtual_angle = 0.0f;
+    float elbow_pitch_joint_virtual_angle = 0.0f;
     float gantry_z_virtual_distance = 0.0f;
 
+    float twist = 0.f; // 正为向右扭转
+    float flip = 0.f; // 正为向上翻转
+    float left_target = 0.f;
+    float right_target = 0.f;
     for (;;) {
-        __disable_irq();
-        __enable_irq();
 
         switch (dr16_.GetData()->left_switch) {
             case 1:
@@ -72,32 +75,34 @@ void Robot::Task()
                 break;
             case 2:
                 // 手臂模式
-                if (dr16_.GetData()->right_stick_x > 0) {
-                    arm_.ControlClaw(Arm::CLAW_CLOSE_ACTION, -dr16_.GetData()->right_stick_x);
-                }else {
-                    arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, 0.0f);
-                }
                 
-                if( dr16_.GetData()->right_stick_y > 0 ) {
-                    arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_UP_ACTION, dr16_.GetData()->right_stick_y * 2);
+                arm_.claws_virtual_angle_ -= dr16_.GetData()->right_stick_x * arm_.CLAWS_SENSITIVITY;
+                if(arm_.claws_virtual_angle_ < 0) {
+                    arm_.ControlClaw(Arm::CLAW_CLOSE_ACTION, arm_.claws_virtual_angle_);
                 } else {
-                    arm_.ControlWristJoint(Arm::WRIST_JOINT_FLIP_DOWN_ACTION,-dr16_.GetData()->right_stick_y * 2);
-                }
-                if (dr16_.GetData()->wheel > 0) {
-                    arm_.ControlWristJoint(Arm::WRIST_JOINT_TWIST_RIGHT_ACTION, dr16_.GetData()->wheel);
-                } else {
-                    arm_.ControlWristJoint(Arm::WRIST_JOINT_TWIST_LEFT_ACTION, -dr16_.GetData()->wheel);
+                    arm_.ControlClaw(Arm::CLAW_OPEN_ACTION, -arm_.claws_virtual_angle_);
                 }
 
-                if (dr16_.GetData()->left_stick_y > 0) {
-                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_UP_ACTION, dr16_.GetData()->left_stick_y);
+                twist = dr16_.GetData()->wheel * arm_.WRIST_SENSITIVITY; // 正为向右扭转
+                flip = dr16_.GetData()->right_stick_y * arm_.WRIST_SENSITIVITY; // 正为向上翻转
+                // left = flip + twist, right = flip - twist）
+                arm_.wrist_joint_left_virtual_angle_ += flip + twist;
+                arm_.wrist_joint_right_virtual_angle_ += flip - twist;
+                arm_.wrist_joint_left_.SetTargetAngle(arm_.wrist_joint_left_virtual_angle_);
+                arm_.wrist_joint_right_.SetTargetAngle(arm_.wrist_joint_right_virtual_angle_);
+
+
+                arm_.elbow_pitch_joint_virtual_angle_ += dr16_.GetData()->left_stick_y * arm_.ELBOW_PITCH_SENSITIVITY;
+                if (arm_.elbow_pitch_joint_virtual_angle_ > 0) {
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_UP_ACTION, arm_.elbow_pitch_joint_virtual_angle_);
                 } else {
-                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_DOWN_ACTION, -dr16_.GetData()->left_stick_y);
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_FLIP_DOWN_ACTION, -arm_.elbow_pitch_joint_virtual_angle_);
                 }
-                if (dr16_.GetData()->left_stick_x > 0) {
-                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_TWIST_RIGHT_ACTION, dr16_.GetData()->left_stick_x);
+                arm_.elbow_yaw_joint_virtual_angle_ += dr16_.GetData()->left_stick_x * arm_.ELBOW_YAW_SENSITIVITY;
+                if (arm_.elbow_yaw_joint_virtual_angle_ > 0) {
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_TWIST_RIGHT_ACTION, arm_.elbow_yaw_joint_virtual_angle_);
                 } else {
-                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_TWIST_LEFT_ACTION, -dr16_.GetData()->left_stick_x);
+                    arm_.ControlElbowJoint(Arm::ELBOW_JOINT_TWIST_LEFT_ACTION, -arm_.elbow_yaw_joint_virtual_angle_);
                 }
                 break;
             case 3:
@@ -121,10 +126,13 @@ void Robot::Task()
 
 
         /********************** 调试信息 ***********************/
-        debug_tools_.VofaSendFloat(static_cast<float>(dr16_.GetData()->left_stick_y)); // 开关1
+        debug_tools_.VofaSendFloat(arm_.elbow_pitch_joint_virtual_angle_);
+        debug_tools_.VofaSendFloat(arm_.elbow_joint_pitch_.GetNowAngleNoncumulative());
+        debug_tools_.VofaSendFloat(dr16_.GetData()->right_stick_y);
         // // 调试帧尾部
         debug_tools_.VofaSendTail();
 
         osDelay(pdMS_TO_TICKS(1));// 1khz
+
     }
 }

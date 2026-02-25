@@ -104,7 +104,7 @@ void Arm::Init() {
 
     elbow_joint_pitch_.pid_angle_.Init(
         30.0f,
-        1.8f,
+        2.8f,
         0.002f,
         0.0f,
         29.0f,
@@ -112,10 +112,10 @@ void Arm::Init() {
         0.001f
     );
     elbow_joint_pitch_.pid_omega_.Init(
-        0.75f,
-        0.003f,
-        0.001f,
+        3.5f,
+        2.0f,
         0.0f,
+        1.0f,
         9.0f,
         9.0f,
         0.001f,
@@ -153,15 +153,15 @@ void Arm::Init() {
         0.001f
     );
     elbow_joint_yaw_.pid_omega_.Init(
-        0.75f,
-        0.003f,
-        0.001f,
+        1.0f,
+        0.5f,
         0.0f,
+        1.0f,
         9.0f,
         9.0f,
         0.001f,
         0.0f,
-        0.0f,
+        0.0f, 
         0.0f,
         0.0f,
         PID_D_First_DISABLE,
@@ -290,6 +290,6 @@ void Arm::Task() {
         elbow_joint_pitch_.CalculatePeriodElapsedCallback();
         elbow_joint_yaw_.CalculatePeriodElapsedCallback();
 
-        osDelay(pdMS_TO_TICKS(1));// 1khz
+        osDelay(pdMS_TO_TICKS(2));// 500hz
     }
 }
