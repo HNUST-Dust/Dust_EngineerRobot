@@ -16,7 +16,7 @@ void Arm::Init() {
         0.0f,
         29.0f,
         29.0f,
-        0.001f
+        0.002f
     );
     claws_.pid_omega_.Init(
         0.75f,
@@ -25,7 +25,7 @@ void Arm::Init() {
         0.0f,
         9.0f,
         9.0f,
-        0.001f,
+        0.002f,
         0.0f,
         0.0f,
         0.0f,
