@@ -1,18 +1,32 @@
-#ifndef MODULES_COMM_DVC_PC_COMM_H
-#define MODULES_COMM_DVC_PC_COMM_H
+#pragma once
+#include "debug_tools.h"
+#include "cmsis_os2.h"
+#include <cstdint>
+#include "../communication_topic/pc_comm_topics.hpp"
 
-#include "bsp_usb.h"
-
-class PcComm
-{
+class PcComm {
 public:
+    static PcComm& Instance() {
+        static PcComm instance;
+        return instance;
+    }
 
-    void Init();
+    struct Config {
+    };
+
+    orb::PcSendAutoAimData pc_send_data_;
+    orb::PcRecvAutoAimData pc_recv_data_;
+
+    void Init(const Config& cfg = {});
     void Task();
-
-protected:
-    // FreeRTOS 入口，静态函数
+    void RxCpltCallback(uint16_t len);
+    
+    private:
+    DebugTools debug_tools_;
+    bool started_ = false;
+    osThreadId_t thread_ = nullptr;
+    
+    Config cfg_{};
+    
     static void TaskEntry(void *param);
 };
-
-#endif //MODULES_COMM_DVC_PC_COMM_H
