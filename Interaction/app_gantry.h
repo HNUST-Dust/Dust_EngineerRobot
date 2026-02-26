@@ -22,6 +22,8 @@ public:
     void XAxisMoveInSpeed(float speed);
     void YAxisMoveInSpeed(float speed);
     void ZAxisMoveInSpeed(float speed);
+    
+    static constexpr float Z_AXIS_SENSITIVITY = 0.002f;
 
 private:
     static constexpr float X_AXIS_DISTANCE_LIMIT = 10.0f; // distance
@@ -31,6 +33,7 @@ private:
     static constexpr float X_AXIS_SPEED_LIMIT = 20.0f; // speed
     static constexpr float Y_AXIS_SPEED_LIMIT = 20.0f; // speed
     static constexpr float Z_AXIS_SPEED_LIMIT = 20.0f; // speed
+
 
     
     static void TaskEntry(void *param);

@@ -19,6 +19,7 @@
 // bsp
 #include "bsp_dwt.h"
 #include "projdefs.h"
+#include <algorithm>
 
 
 void Robot::Init()
@@ -54,18 +55,14 @@ void Robot::TaskEntry(void *argument)
 void Robot::Task()
 {
     float claws_virtual_angle = 0.0f;
-    float wrist_left_joint_virtual_angle = 0.0f;
-    float wrist_right_joint_virtual_angle = 0.0f;
     float elbow_yaw_joint_virtual_angle = 0.0f;
     float elbow_pitch_joint_virtual_angle = 0.0f;
-    float gantry_z_virtual_distance = 0.0f;
 
     float twist = 0.f; // 正为向右扭转
     float flip = 0.f; // 正为向上翻转
     float left_target = 0.f;
     float right_target = 0.f;
     for (;;) {
-
         switch (dr16_.GetData()->left_switch) {
             case 1:
                 // 底盘模式
@@ -75,8 +72,8 @@ void Robot::Task()
                 break;
             case 2:
                 // 手臂模式
-                
                 arm_.claws_virtual_angle_ -= dr16_.GetData()->right_stick_x * arm_.CLAWS_SENSITIVITY;
+                std::clamp(arm_.claws_virtual_angle_,-0.5f,0.5f);
                 if(arm_.claws_virtual_angle_ < 0) {
                     arm_.ControlClaw(Arm::CLAW_CLOSE_ACTION, arm_.claws_virtual_angle_);
                 } else {
@@ -109,10 +106,11 @@ void Robot::Task()
                 // 龙门架模式
                 gantry_.XAxisMoveInSpeed(dr16_.GetData()->left_stick_y * 10.f); 
                 gantry_.YAxisMoveInSpeed(dr16_.GetData()->left_stick_x * 10.f);
-                gantry_.ZAxisMoveInSpeed(dr16_.GetData()->right_stick_y *10.f);
+                // gantry_.ZAxisMoveInSpeed(dr16_.GetData()->right_stick_y *10.f);
                 // gantry_.XAxisMoveInDistance(10.f);
                 // gantry_.YAxisMoveInDistance(10.f);
-                // gantry_.ZAxisMoveInDistance(10.f);
+                gantry_.virtual_z_distance_ += dr16_.GetData()->right_stick_y * gantry_.Z_AXIS_SENSITIVITY;
+                gantry_.ZAxisMoveInDistance(gantry_.virtual_z_distance_);
         
                 break;
             default:

@@ -82,24 +82,24 @@ void MotorCubemars::CanSendSaveZero()
 
 void MotorCubemars::Output() {
 
-            MotorCubemarsCanTxData *tmp_buffer = (MotorCubemarsCanTxData *)tx_data_;
-            
-            uint16_t tmp_angle, tmp_omega, tmp_torque, tmp_k_p, tmp_k_d;
+    MotorCubemarsCanTxData *tmp_buffer = (MotorCubemarsCanTxData *)tx_data_;
+    
+    uint16_t tmp_angle, tmp_omega, tmp_torque, tmp_k_p, tmp_k_d;
 
-            tmp_angle = math_float_to_int(control_angle_, 0, angle_max_, 0x7fff, (1 << 16) - 1);
-            tmp_omega = math_float_to_int(control_omega_, 0, omega_max_, 0x7ff, (1 << 12) - 1);
-            tmp_torque = math_float_to_int(control_torque_, 0, torque_max_, 0x7ff, (1 << 12) - 1);
-            tmp_k_p = math_float_to_int(k_p_, 0, 500.0f, 0, (1 << 12) - 1);
-            tmp_k_d = math_float_to_int(k_d_, 0, 5.0f, 0, (1 << 12) - 1);
+    tmp_angle = math_float_to_int(control_angle_, 0, angle_max_, 0x7fff, (1 << 16) - 1);
+    tmp_omega = math_float_to_int(control_omega_, 0, omega_max_, 0x7ff, (1 << 12) - 1);
+    tmp_torque = math_float_to_int(control_torque_, 0, torque_max_, 0x7ff, (1 << 12) - 1);
+    tmp_k_p = math_float_to_int(k_p_, 0, 500.0f, 0, (1 << 12) - 1);
+    tmp_k_d = math_float_to_int(k_d_, 0, 5.0f, 0, (1 << 12) - 1);
 
-            tmp_buffer->control_angle_reverse = math_endian_reverse_16(&tmp_angle, nullptr);
-            tmp_buffer->control_omega_11_4 = tmp_omega >> 4;
-            tmp_buffer->control_omega_3_0_k_p_11_8 = ((tmp_omega & 0x0f) << 4) | (tmp_k_p >> 8);
-            tmp_buffer->k_p_7_0 = tmp_k_p & 0xff;
-            tmp_buffer->k_d_11_4 = tmp_k_d >> 4;
-            tmp_buffer->k_d_3_0_control_torque_11_8 = ((tmp_k_d & 0x0f) << 4) | (tmp_torque >> 8);
-            tmp_buffer->control_torque_7_0 = tmp_torque & 0xff;
-            can_send_data(can_manage_object_->can_handler, can_tx_id_, tx_data_, 8);
+    tmp_buffer->control_angle_reverse = math_endian_reverse_16(&tmp_angle, nullptr);
+    tmp_buffer->control_omega_11_4 = tmp_omega >> 4;
+    tmp_buffer->control_omega_3_0_k_p_11_8 = ((tmp_omega & 0x0f) << 4) | (tmp_k_p >> 8);
+    tmp_buffer->k_p_7_0 = tmp_k_p & 0xff;
+    tmp_buffer->k_d_11_4 = tmp_k_d >> 4;
+    tmp_buffer->k_d_3_0_control_torque_11_8 = ((tmp_k_d & 0x0f) << 4) | (tmp_torque >> 8);
+    tmp_buffer->control_torque_7_0 = tmp_torque & 0xff;
+    can_send_data(can_manage_object_->can_handler, can_tx_id_, tx_data_, 8);
 
 }
 
