@@ -1,6 +1,6 @@
 #include "dvc_motor_cubemars.h"
 #include "bsp_can.h"
-#include "alg_math.h"
+#include "../Algorithm/math/alg_math.h"
 #include <cstdint>
 
 uint8_t kMotorCANMessageEnter[8] = {
@@ -92,7 +92,9 @@ void MotorCubemars::Output() {
     tmp_k_p = math_float_to_int(k_p_, 0, 500.0f, 0, (1 << 12) - 1);
     tmp_k_d = math_float_to_int(k_d_, 0, 5.0f, 0, (1 << 12) - 1);
 
-    tmp_buffer->control_angle_reverse = math_endian_reverse_16(&tmp_angle, nullptr);
+    tmp_buffer->control_angle_reverse = tmp_angle;
+    math_endian_reverse_16(&tmp_buffer->control_angle_reverse);
+
     tmp_buffer->control_omega_11_4 = tmp_omega >> 4;
     tmp_buffer->control_omega_3_0_k_p_11_8 = ((tmp_omega & 0x0f) << 4) | (tmp_k_p >> 8);
     tmp_buffer->k_p_7_0 = tmp_k_p & 0xff;
@@ -116,8 +118,10 @@ void MotorCubemars::DataProcess()
         return;
     }
 
-    // 处理大小端
-    math_endian_reverse_16((void *)&tmp_buffer->angle_reverse, &tmp_encoder);
+    // 处理大小端（就地翻转，避免重载匹配问题）
+    math_endian_reverse_16((void *)&tmp_buffer->angle_reverse);
+    tmp_encoder = tmp_buffer->angle_reverse;
+
     tmp_omega = (tmp_buffer->omega_11_4 << 4) | (tmp_buffer->omega_3_0_torque_11_8 >> 4);
     tmp_torque = ((tmp_buffer->omega_3_0_torque_11_8 & 0x0f) << 8) | (tmp_buffer->torque_7_0);
 

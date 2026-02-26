@@ -67,7 +67,7 @@ uint8_t kDmMotorCANMessageSaveZero[8] = {   0xff,
  * @param __DJI_Motor_Driver_Version 大疆驱动版本, 当且仅当当前被分配电机为6020, 且是电流驱动新版本时选2023, 否则都是default
  * @return uint8_t* 缓冲区指针
  */
-uint8_t *allocate_tx_data(FDCAN_HandleTypeDef *hcan, enum MotorDmMotorId1To4 can_rx_id_1_to_4)
+uint8_t *allocate_tx_data(FDCAN_HandleTypeDef *hcan, MotorDmMotorId1To4 can_rx_id_1_to_4)
 {
     uint8_t *tmp_tx_data_ptr;
     if (hcan == &hfdcan1)
@@ -120,6 +120,11 @@ uint8_t *allocate_tx_data(FDCAN_HandleTypeDef *hcan, enum MotorDmMotorId1To4 can
         {
             tmp_tx_data_ptr = &(g_can1_0x4fe_tx_data[6]);
 
+            break;
+        }
+        default:
+        {
+            tmp_tx_data_ptr = nullptr;
             break;
         }
         }
@@ -176,6 +181,11 @@ uint8_t *allocate_tx_data(FDCAN_HandleTypeDef *hcan, enum MotorDmMotorId1To4 can
 
             break;
         }
+        default:
+        {
+            tmp_tx_data_ptr = nullptr;
+            break;
+        }
         }
     }
     else if (hcan == &hfdcan3)
@@ -228,6 +238,11 @@ uint8_t *allocate_tx_data(FDCAN_HandleTypeDef *hcan, enum MotorDmMotorId1To4 can
         {
             tmp_tx_data_ptr = &(g_can3_0x4fe_tx_data[6]);
 
+            break;
+        }
+        default:
+        {
+            tmp_tx_data_ptr = nullptr;
             break;
         }
         }
@@ -294,7 +309,13 @@ void MotorDmNormal::Init(
         can_tx_id_ = can_tx_id + 0x300;
         break;
     }
+    default:
+    {
+        can_tx_id_ = can_tx_id;
+        break;
     }
+    }
+
     motor_dm_control_method_ = motor_dm_control_method;
     motor_dm_close_loop_mode_ = motor_dm_close_loop_mode;
     angle_max_ = angle_max;
@@ -409,24 +430,18 @@ void MotorDmNormal::SendPeriodElapsedCallback()
 }
 void MotorDmNormal::PidCalculate() {
     if (motor_dm_close_loop_mode_ == ANGLE_OMEGA_CLOSE_LOOP_MODE) {
-        // 位置环
-        pid_angle_.SetNow(rx_data_.now_angle_noncumulative);
-        pid_angle_.SetTarget(target_angle_);
-        pid_angle_.CalculatePeriodElapsedCallback();
+        // 位置环（达妙反馈角度范围通常是 [-angle_max, angle_max]，存在跨零；使用 update_angle 处理劣弧）
+        const float omega_target = pid_angle_.update_angle(target_angle_, rx_data_.now_angle_noncumulative);
 
         // 速度环
-        pid_omega_.SetNow(rx_data_.now_omega);
-        pid_omega_.SetTarget(pid_angle_.GetOut());
-        pid_omega_.CalculatePeriodElapsedCallback();
-    }else if (motor_dm_close_loop_mode_ == OMEGA_CLOSE_LOOP_MODE) {
+        control_torque_ = pid_omega_.update(omega_target, rx_data_.now_omega);
+    } else if (motor_dm_close_loop_mode_ == OMEGA_CLOSE_LOOP_MODE) {
         // 速度环
-        pid_omega_.SetNow(rx_data_.now_omega);
-        pid_omega_.SetTarget(target_omega_);
-        pid_omega_.CalculatePeriodElapsedCallback();
+        control_torque_ = pid_omega_.update(target_omega_, rx_data_.now_omega);
+    } else {
+        // 未知模式，输出置零
+        control_torque_ = 0.0f;
     }
-
-    // 发送出电流
-    control_torque_ = pid_omega_.GetOut();
 }
 
 void MotorDmNormal::CalculatePeriodElapsedCallback() {
@@ -453,7 +468,9 @@ void MotorDmNormal::DataProcess()
     }
 
     // 处理大小端
-    math_endian_reverse_16((void *)&tmp_buffer->angle_reverse, &tmp_encoder);
+    math_endian_reverse_16((void *)&tmp_buffer->angle_reverse);
+    tmp_encoder = tmp_buffer->angle_reverse;
+
     tmp_omega = (tmp_buffer->omega_11_4 << 4) | (tmp_buffer->omega_3_0_torque_11_8 >> 4);
     tmp_torque = ((tmp_buffer->omega_3_0_torque_11_8 & 0x0f) << 8) | (tmp_buffer->torque_7_0);
 
@@ -506,7 +523,9 @@ void MotorDmNormal::Output()
         tmp_k_p = math_float_to_int(k_p_, 0, 500.0f, 0, (1 << 12) - 1);
         tmp_k_d = math_float_to_int(k_d_, 0, 5.0f, 0, (1 << 12) - 1);
 
-        tmp_buffer->control_angle_reverse = math_endian_reverse_16(&tmp_angle, nullptr);
+        tmp_buffer->control_angle_reverse = tmp_angle;
+        math_endian_reverse_16(&tmp_buffer->control_angle_reverse);
+
         tmp_buffer->control_omega_11_4 = tmp_omega >> 4;
         tmp_buffer->control_omega_3_0_k_p_11_8 = ((tmp_omega & 0x0f) << 4) | (tmp_k_p >> 8);
         tmp_buffer->k_p_7_0 = tmp_k_p & 0xff;
@@ -549,6 +568,10 @@ void MotorDmNormal::Output()
 
         can_send_data(can_manage_object_->can_handler, can_tx_id_, tx_data_, 8);
 
+        break;
+    }
+    default:
+    {
         break;
     }
     }
@@ -609,8 +632,8 @@ void MotorDm1To4::AlivePeriodElapsedCallback()
     {
         // 电机断开连接
         motor_dm_status_ = MOTOR_DM_STATUS_DISABLE;
-        pid_angle_.SetIntegralError(0.0f);
-        pid_omega_.SetIntegralError(0.0f);
+        pid_angle_.reset();
+        pid_omega_.reset();
     }
     else
     {
@@ -651,9 +674,14 @@ void MotorDm1To4::DataProcess()
     MotorDmCanRxData1To4 *tmp_buffer = (MotorDmCanRxData1To4 *) can_manage_object_->rx_buffer.data;
 
     // 处理大小端
-    math_endian_reverse_16((void *) &tmp_buffer->encoder_reverse, (void *) &tmp_encoder);
-    math_endian_reverse_16((void *) &tmp_buffer->omega_reverse, (void *) &tmp_omega);
-    math_endian_reverse_16((void *) &tmp_buffer->current_reverse, (void *) &tmp_current);
+    math_endian_reverse_16((void *) &tmp_buffer->encoder_reverse);
+    tmp_encoder = tmp_buffer->encoder_reverse;
+
+    math_endian_reverse_16((void *) &tmp_buffer->omega_reverse);
+    tmp_omega = tmp_buffer->omega_reverse;
+
+    math_endian_reverse_16((void *) &tmp_buffer->current_reverse);
+    tmp_current = tmp_buffer->current_reverse;
 
     // 计算圈数与总编码器值
     delta_encoder = tmp_encoder - rx_data_.pre_encoder;
@@ -690,31 +718,21 @@ void MotorDm1To4::PidCalculate()
     {
     case (MOTOR_DM_CONTROL_METHOD_1_TO_4_CURRENT):
     {
+        // no pid in current mode
         break;
     }
     case (MOTOR_DM_CONTROL_METHOD_1_TO_4_OMEGA):
     {
-        pid_omega_.SetTarget(target_omega_ + feedforward_omega_);
-        pid_omega_.SetNow(rx_data_.now_omega);
-        pid_omega_.CalculatePeriodElapsedCallback();
-
-        target_current_ = pid_omega_.GetOut();
+        target_current_ = pid_omega_.update(target_omega_ + feedforward_omega_, rx_data_.now_omega);
 
         break;
     }
     case (MOTOR_DM_CONTROL_METHOD_1_TO_4_ANGLE):
     {
-        pid_angle_.SetTarget(target_angle_);
-        pid_angle_.SetNow(rx_data_.now_angle);
-        pid_angle_.CalculatePeriodElapsedCallback();
+        // 角度环：这里 now_angle 来自编码器累计角（连续角），不需要劣弧处理
+        target_omega_ = pid_angle_.update(target_angle_, rx_data_.now_angle);
 
-        target_omega_ = pid_angle_.GetOut();
-
-        pid_omega_.SetTarget(target_omega_ + feedforward_omega_);
-        pid_omega_.SetNow(rx_data_.now_omega);
-        pid_omega_.CalculatePeriodElapsedCallback();
-
-        target_current_ = pid_omega_.GetOut();
+        target_current_ = pid_omega_.update(target_omega_ + feedforward_omega_, rx_data_.now_omega);
 
         break;
     }

@@ -11,7 +11,7 @@
 #ifndef MODULES_MOTOR_DJI_H_
 #define MODULES_MOTOR_DJI_H_
 
-#include "alg_pid.h"
+#include "../Algorithm/control/alg_pid.h"
 #include "bsp_can.h"
 
 /**
@@ -109,9 +109,9 @@ class MotorDjiC620
 {
 public:
     // PID角度环控制
-    Pid pid_angle_;
+    alg::Pid pid_angle_;
     // PID角速度环控制
-    Pid pid_omega_;
+    alg::Pid pid_omega_;
 
     void Init(
         FDCAN_HandleTypeDef *hcan,
@@ -266,9 +266,9 @@ class MotorDjiC610
 {
 public:
     // PID角度环控制
-    Pid pid_angle_;
+    alg::Pid pid_angle_;
     // PID角速度环控制
-    Pid pid_omega_;
+    alg::Pid pid_omega_;
 
     void Init(
         FDCAN_HandleTypeDef *hcan,
@@ -316,6 +316,8 @@ public:
     inline void SetFeedforwardCurrent(float feedforward_current);
 
     void CanRxCpltCallback(uint8_t *rx_data);
+
+    void AlivePeriodElapsedCallback();
 
     void CalculatePeriodElapsedCallback();
 

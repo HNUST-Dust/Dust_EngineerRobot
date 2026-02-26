@@ -12,9 +12,9 @@
 #define MODULES_MOTOR_DM_H_
 /* Includes ------------------------------------------------------------------*/
 
-#include "alg_pid.h"
+#include "../Algorithm/control/alg_pid.h"
 #include "bsp_can.h"
-#include "alg_math.h"
+#include "../Algorithm/math/alg_math.h"
 
 /* Exported macros -----------------------------------------------------------*/
 
@@ -205,8 +205,8 @@ struct MotorDmRxData1to4
 class MotorDmNormal
 {
 public:
-    Pid pid_omega_;
-    Pid pid_angle_;
+    alg::Pid pid_omega_;
+    alg::Pid pid_angle_;
 
     void Init(FDCAN_HandleTypeDef *hcan,
             uint8_t can_rx_id,
@@ -370,11 +370,8 @@ protected:
 class MotorDm1To4
 {
 public:
-
-    // PID角度环控制
-    Pid pid_angle_;
-    // PID角速度环控制
-    Pid pid_omega_;
+    alg::Pid pid_angle_;
+    alg::Pid pid_omega_;
 
     void Init(FDCAN_HandleTypeDef *hcan,
               MotorDmMotorId1To4 can_rx_id,

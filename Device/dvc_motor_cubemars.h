@@ -2,7 +2,7 @@
 
 #include "bsp_can.h"
 #include <cstdint>
-#include "alg_pid.h"
+#include "../Algorithm/control/alg_pid.h"
 
 enum MotorCubemarsControlMethod {
    TORQUE_CONTROL,
@@ -41,7 +41,7 @@ struct MotorCubemarsCanTxData {
 
 class MotorCubemars {
 public:
-    Pid pid_angle_;
+    alg::Pid pid_angle_;
     
     void Init(
         FDCAN_HandleTypeDef *hcan,
