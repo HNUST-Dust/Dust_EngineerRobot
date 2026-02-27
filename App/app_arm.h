@@ -4,32 +4,14 @@
 
 class Arm {
 public:
-    // 手爪
-    enum ClawActions {
-        CLAW_OPEN_ACTION = 0,
-        CLAW_CLOSE_ACTION,
-    };
     MotorDmNormal claws_;
 
-    // 手腕关节
-    enum WristJointActions {
-        WRIST_JOINT_FLIP_UP_ACTION = 0,
-        WRIST_JOINT_FLIP_DOWN_ACTION,
-        WRIST_JOINT_TWIST_LEFT_ACTION,
-        WRIST_JOINT_TWIST_RIGHT_ACTION,
-    };
-    MotorDjiC610 wrist_joint_left_;
-    MotorDjiC610 wrist_joint_right_;
-
-    // 肘部关节
-    enum ElbowJointActions {
-        ELBOW_JOINT_FLIP_UP_ACTION = 0,
-        ELBOW_JOINT_FLIP_DOWN_ACTION,
-        ELBOW_JOINT_TWIST_LEFT_ACTION,
-        ELBOW_JOINT_TWIST_RIGHT_ACTION,
-    };
     MotorDmNormal elbow_joint_yaw_;
     MotorDmNormal elbow_joint_pitch_;
+
+    // 手腕关节
+    MotorDjiC610 wrist_joint_left_;
+    MotorDjiC610 wrist_joint_right_;
 
     constexpr static float kClawsSensitivity = 0.001f;
     float claws_virtual_angle_ = 0.0f;
@@ -48,8 +30,6 @@ public:
 
     // 手爪：只传虚拟角度，正负表示开/合方向
     void ControlClaw(float virtual_angle);
-
-    void ControlWristJoint(WristJointActions action, float angle);
 
     // 肘关节：统一只传虚拟角度
     // 说明：此接口默认控制pitch（翻转）轴；yaw请使用ControlElbowYawJoint

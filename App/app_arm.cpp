@@ -235,34 +235,20 @@ constexpr float Clamp(float value, float min, float max) {
 void Arm::ControlClaw(float virtual_angle) {
     // 约定：virtual_angle > 0 表示“开”，virtual_angle < 0 表示“合”
     float angle = Clamp(virtual_angle, -kClawsLimit, kClawsLimit);
-    claws_.SetTargetAngle(angle);
-}
 
-void Arm::ControlWristJoint(Arm::WristJointActions action, float angle) {
-    switch (action) {
-        case Arm::WRIST_JOINT_FLIP_UP_ACTION:
-            angle = Clamp(angle, -kWristJointFlipLimit, kWristJointFlipLimit);
-            wrist_joint_left_.SetTargetAngle(angle);
-            wrist_joint_right_.SetTargetAngle(angle);
-            break;
-        case Arm::WRIST_JOINT_FLIP_DOWN_ACTION:
-            angle = Clamp(angle, -kWristJointFlipLimit, kWristJointFlipLimit);
-            wrist_joint_left_.SetTargetAngle(-angle);
-            wrist_joint_right_.SetTargetAngle(-angle);
-            break;
-        case Arm::WRIST_JOINT_TWIST_LEFT_ACTION:
-            angle = Clamp(angle, -kWristJointTwistLimit, kWristJointTwistLimit);
-            wrist_joint_left_.SetTargetAngle(-angle);
-            wrist_joint_right_.SetTargetAngle(angle);
-            break;
-        case Arm::WRIST_JOINT_TWIST_RIGHT_ACTION:
-            angle = Clamp(angle, -kWristJointTwistLimit, kWristJointTwistLimit);
-            wrist_joint_left_.SetTargetAngle(angle);
-            wrist_joint_right_.SetTargetAngle(-angle);
-            break;
-        default:
-            break;
+    // 夹爪限流停止：当电流达到阈值且仍在继续“夹紧”时，锁定当前角度
+    if (virtual_angle < 0.0f) {
+        // TODO: 按实际标定调整阈值（单位：A）
+        constexpr float kClawHoldCurrentLimitA = 3.0f;
+
+        const float now_torque = claws_.GetNowTorque();
+        if (now_torque >= kClawHoldCurrentLimitA) {
+            claws_.SetTargetAngle(claws_.GetNowAngleNoncumulative());
+            return;
+        }
     }
+
+    claws_.SetTargetAngle(angle);
 }
 
 void Arm::ControlWristByTwistFlip(float twist_delta, float flip_delta) {
