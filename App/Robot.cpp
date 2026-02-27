@@ -100,8 +100,8 @@ void Robot::Task()
 
 
         /********************** 调试信息 ***********************/
-        debug_tools_.VofaSendFloat(arm_.elbow_pitch_joint_virtual_angle_);
-        debug_tools_.VofaSendFloat(arm_.elbow_joint_pitch_.GetNowAngleNoncumulative());
+        debug_tools_.VofaSendFloat(arm_.elbow_yaw_joint_virtual_angle_);
+        debug_tools_.VofaSendFloat(arm_.elbow_joint_yaw_.GetNowAngleNoncumulative());
         debug_tools_.VofaSendFloat(dr16_.GetData()->right_stick_y);
         // // 调试帧尾部
         debug_tools_.VofaSendTail();

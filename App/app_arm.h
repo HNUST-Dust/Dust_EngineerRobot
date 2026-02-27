@@ -63,13 +63,13 @@ public:
     void ControlWristByTwistFlip(float twist_delta, float flip_delta);
 
 private:
-    static constexpr float kClawsLimit = 0.5f;
+    static constexpr float kClawsLimit = 0.35f;
 
     static constexpr float kWristJointFlipLimit = 1.0f;
     static constexpr float kWristJointTwistLimit = 1.0f;
 
     static constexpr float kElbowJointFlipLimit = 1.0f;
-    static constexpr float kElbowJointTwistLimit = 1.0f;
+    static constexpr float kElbowJointTwistLimit = 3.14f;
 
     static void TaskEntry(void *param);
 };

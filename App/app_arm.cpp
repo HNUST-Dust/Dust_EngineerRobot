@@ -270,9 +270,6 @@ void Arm::ControlWristByTwistFlip(float twist_delta, float flip_delta) {
     wrist_joint_left_virtual_angle_ += flip_delta + twist_delta;
     wrist_joint_right_virtual_angle_ += flip_delta - twist_delta;
 
-    wrist_joint_left_virtual_angle_ = Clamp(wrist_joint_left_virtual_angle_, -kWristJointFlipLimit, kWristJointFlipLimit);
-    wrist_joint_right_virtual_angle_ = Clamp(wrist_joint_right_virtual_angle_, -kWristJointFlipLimit, kWristJointFlipLimit);
-
     wrist_joint_left_.SetTargetAngle(wrist_joint_left_virtual_angle_);
     wrist_joint_right_.SetTargetAngle(wrist_joint_right_virtual_angle_);
 }
