@@ -59,8 +59,6 @@ void Robot::Task()
 {
     float twist = 0.f; // 正为向右扭转
     float flip = 0.f; // 正为向上翻转
-    float left_target = 0.f;
-    float right_target = 0.f;
     for (;;) {
         switch (dr16_.GetData()->left_switch) {
             case 1:
@@ -77,12 +75,7 @@ void Robot::Task()
 
                 twist = dr16_.GetData()->wheel * arm_.kWristSensitivity; // 正为向右扭转
                 flip = dr16_.GetData()->right_stick_y * arm_.kWristSensitivity; // 正为向上翻转
-                // left = flip + twist, right = flip - twist）
-                arm_.wrist_joint_left_virtual_angle_ += flip + twist;
-                arm_.wrist_joint_right_virtual_angle_ += flip - twist;
-                arm_.wrist_joint_left_.SetTargetAngle(arm_.wrist_joint_left_virtual_angle_);
-                arm_.wrist_joint_right_.SetTargetAngle(arm_.wrist_joint_right_virtual_angle_);
-
+                arm_.ControlWristByTwistFlip(twist, flip);
 
                 arm_.elbow_pitch_joint_virtual_angle_ += dr16_.GetData()->left_stick_y * arm_.kElbowPitchSensitivity;
                 arm_.ControlElbowJoint(arm_.elbow_pitch_joint_virtual_angle_);

@@ -9,8 +9,7 @@
 extern "C" {
 #endif
 
-void Init();
-
+void startup_thread(void *argument);
 
 #ifdef __cplusplus
 };

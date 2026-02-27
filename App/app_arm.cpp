@@ -265,6 +265,18 @@ void Arm::ControlWristJoint(Arm::WristJointActions action, float angle) {
     }
 }
 
+void Arm::ControlWristByTwistFlip(float twist_delta, float flip_delta) {
+    // left = flip + twist, right = flip - twist
+    wrist_joint_left_virtual_angle_ += flip_delta + twist_delta;
+    wrist_joint_right_virtual_angle_ += flip_delta - twist_delta;
+
+    wrist_joint_left_virtual_angle_ = Clamp(wrist_joint_left_virtual_angle_, -kWristJointFlipLimit, kWristJointFlipLimit);
+    wrist_joint_right_virtual_angle_ = Clamp(wrist_joint_right_virtual_angle_, -kWristJointFlipLimit, kWristJointFlipLimit);
+
+    wrist_joint_left_.SetTargetAngle(wrist_joint_left_virtual_angle_);
+    wrist_joint_right_.SetTargetAngle(wrist_joint_right_virtual_angle_);
+}
+
 void Arm::ControlElbowJoint(float virtual_angle) {
     // 默认：控制 pitch 轴（翻转）。virtual_angle > 0 上翻，< 0 下翻
     float angle = Clamp(virtual_angle, -kElbowJointFlipLimit, kElbowJointFlipLimit);

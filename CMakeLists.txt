@@ -44,6 +44,7 @@ target_link_directories(${PROJECT_NAME}.elf PRIVATE ${CMAKE_SOURCE_DIR}/ThirdPar
 target_link_libraries(${PROJECT_NAME}.elf PRIVATE libarm_cortexM7lfsp_math.a)
 
 add_subdirectory(ThirdParty)
+add_subdirectory(daemon_supervisor)
 add_subdirectory(Board/dm-h723)
 add_subdirectory(Algorithm)
 add_subdirectory(Drivers)
@@ -53,6 +54,7 @@ add_subdirectory(App)
 
 target_link_libraries(${PROJECT_NAME}.elf PRIVATE
     dust_thirdparty
+    dust_daemon_supervisor
     dust_board_dm_h723
     dust_algorithm
     dust_drivers

@@ -58,6 +58,10 @@ public:
     void ControlElbowPitchJoint(float virtual_angle);
     void ControlElbowYawJoint(float virtual_angle);
 
+    // 手腕：输入 twist/flip 的增量角度，内部完成左右联动并下发目标角
+    // 约定：flip > 0 为向上翻转；twist > 0 为向右扭转
+    void ControlWristByTwistFlip(float twist_delta, float flip_delta);
+
 private:
     static constexpr float kClawsLimit = 0.5f;
 

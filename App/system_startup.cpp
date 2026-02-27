@@ -1,7 +1,8 @@
-#include "Init.h"
+#include "system_startup.h"
 #include "Robot.h"
 #include "bsp_usart.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
 Robot robot;
 
 void uart7_debug_callback(uint8_t *buffer, uint16_t length)
@@ -112,7 +113,7 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
     }
 }
 
-void Init()
+void startup_thread(void *argument)
 {
     // UART5 初始化，DR16接收机
     uart_init(&huart5, uart5_debug_callback, UART_BUFFER_SIZE);
@@ -126,4 +127,6 @@ void Init()
     can_init(&hfdcan3,can3_callback);
 
     robot.Init();
+
+    vTaskDelete(NULL);
 }
