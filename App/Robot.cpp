@@ -12,6 +12,7 @@
 #include "Robot.h"
 #include "app_chassis.h"
 #include "app_arm.h"
+#include "app_gantry.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -87,8 +88,9 @@ void Robot::Task()
                 // 龙门架模式
                 gantry_.XAxisMoveInSpeed(dr16_.GetData()->left_stick_y * 10.f); 
                 gantry_.YAxisMoveInSpeed(dr16_.GetData()->left_stick_x * 10.f);
-                gantry_.virtual_z_distance_ += dr16_.GetData()->right_stick_y * gantry_.Z_AXIS_SENSITIVITY;
-                gantry_.ZAxisMoveInDistance(gantry_.virtual_z_distance_);
+                gantry_.ZAxisMoveInSpeed(dr16_.GetData()->right_stick_y * 10.f);
+                // gantry_.virtual_z_distance_ += dr16_.GetData()->right_stick_y * gantry_.Z_AXIS_SENSITIVITY;
+                // gantry_.ZAxisMoveInDistance(gantry_.virtual_z_distance_);
         
                 break;
             default:
@@ -100,9 +102,10 @@ void Robot::Task()
 
 
         /********************** 调试信息 ***********************/
-        debug_tools_.VofaSendFloat(arm_.elbow_yaw_joint_virtual_angle_);
-        debug_tools_.VofaSendFloat(arm_.elbow_joint_yaw_.GetNowAngleNoncumulative());
-        debug_tools_.VofaSendFloat(dr16_.GetData()->right_stick_y);
+        debug_tools_.VofaSendFloat(gantry_.virtual_z_distance_);
+        debug_tools_.VofaSendFloat(gantry_.motor_z_axis_left_.GetOmega());
+        debug_tools_.VofaSendFloat(gantry_.motor_z_axis_left_.GetAngle());
+        debug_tools_.VofaSendFloat(gantry_.motor_z_axis_left_.GetTorque());
         // // 调试帧尾部
         debug_tools_.VofaSendTail();
 

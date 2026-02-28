@@ -6,6 +6,7 @@
 #include "dvc_motor_dm.h"
 #include "fdcan.h"
 #include "projdefs.h"
+#include <cmath>
 
 void Arm::Init() {
 
@@ -239,10 +240,10 @@ void Arm::ControlClaw(float virtual_angle) {
     // 夹爪限流停止：当电流达到阈值且仍在继续“夹紧”时，锁定当前角度
     if (virtual_angle < 0.0f) {
         // TODO: 按实际标定调整阈值（单位：A）
-        constexpr float kClawHoldCurrentLimitA = 3.0f;
+        constexpr float kClawHoldCurrentLimitA = 2.0f;
 
         const float now_torque = claws_.GetNowTorque();
-        if (now_torque >= kClawHoldCurrentLimitA) {
+        if (fabs(now_torque) >= kClawHoldCurrentLimitA) {
             claws_.SetTargetAngle(claws_.GetNowAngleNoncumulative());
             return;
         }
