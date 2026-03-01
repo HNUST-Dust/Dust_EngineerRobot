@@ -55,6 +55,7 @@ extern UartManageObject g_uart5_manage_object;
 extern UartManageObject g_uart6_manage_object;
 extern UartManageObject g_uart7_manage_object;
 extern UartManageObject g_uart8_manage_object;
+extern UartManageObject g_uart10_manage_object;
 
 /* Exported function declarations --------------------------------------------*/
 

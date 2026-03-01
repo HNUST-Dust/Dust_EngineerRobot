@@ -7,6 +7,7 @@
 // module
 #include "debug_tools.h"
 #include "dr16.h"
+#include "vt03.h"
 
 
 static constexpr float kChassisSpeed = 15.0f;
@@ -20,6 +21,7 @@ public:
     DebugTools debug_tools_;
     // 遥控器DR16
     DR16 dr16_;
+    VT03 vt03_;
     // 底盘
     Chassis chassis_;
     // 龙门架

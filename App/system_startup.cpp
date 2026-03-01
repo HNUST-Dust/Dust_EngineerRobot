@@ -15,6 +15,10 @@ void uart5_debug_callback(uint8_t *buffer, uint16_t length)
     robot.dr16_.RxCpltCallback(buffer, length);
 }
 
+void uart10_debug_callback(uint8_t *buffer, uint16_t length)
+{
+    robot.vt03_.UART_RxCpltCallback(buffer, length);
+}
 void can1_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
@@ -119,6 +123,8 @@ void startup_thread(void *argument)
     uart_init(&huart5, uart5_debug_callback, UART_BUFFER_SIZE);
     // USART7 初始化，调试
     uart_init(&huart7, uart7_debug_callback, UART_BUFFER_SIZE);
+    // USART10 初始化，VT03
+    uart_init(&huart10, uart10_debug_callback, UART_BUFFER_SIZE);
     // CAN1 初始化，控制底盘 + 一个龙门架抬升电机
     can_init(&hfdcan1,can1_callback);
     // CAN2 初始化，控制龙门架 - 一个龙门架抬升电机

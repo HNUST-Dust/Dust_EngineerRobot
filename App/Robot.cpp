@@ -35,6 +35,7 @@ void Robot::Init()
 
     // dr16初始化
     dr16_.Init();
+    vt03_.Init(&huart10);
     // 底盘初始化
     chassis_.Init();
     // 手臂初始化

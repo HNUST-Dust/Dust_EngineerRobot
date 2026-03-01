@@ -134,6 +134,10 @@ void VT03::Init(UART_HandleTypeDef *huart)
     {
         UART_Manage_Object = &g_uart8_manage_object;
     }
+    else if (huart->Instance == USART10)
+    {
+        UART_Manage_Object = &g_uart10_manage_object;
+    }
 }
 
 /**

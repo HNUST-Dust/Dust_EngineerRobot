@@ -26,6 +26,7 @@ UartManageObject g_uart5_manage_object = {0};
 UartManageObject g_uart6_manage_object = {0};
 UartManageObject g_uart7_manage_object = {0};
 UartManageObject g_uart8_manage_object = {0};
+UartManageObject g_uart10_manage_object = {0};
 
 /* Private function declarations ---------------------------------------------*/
 
@@ -104,6 +105,14 @@ void uart_init(UART_HandleTypeDef *huart, UartCallback callback_function, uint16
         g_uart8_manage_object.tx_cplt_flag = true;
         HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart8_manage_object.rx_buffer, g_uart8_manage_object.rx_buffer_length);
     }
+    else if (huart->Instance == USART10)
+    {
+        g_uart10_manage_object.uart_handler = huart;
+        g_uart10_manage_object.callback_function = callback_function;
+        g_uart10_manage_object.rx_buffer_length = rx_buffer_length;
+        g_uart10_manage_object.tx_cplt_flag = true;
+        HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart10_manage_object.rx_buffer, g_uart10_manage_object.rx_buffer_length);
+    }
 }
 
 /**
@@ -144,6 +153,10 @@ void uart_reinit(UART_HandleTypeDef *huart)
     else if (huart->Instance == UART8)
     {
         HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart8_manage_object.rx_buffer, g_uart8_manage_object.rx_buffer_length);
+    }
+    else if (huart->Instance == USART10)
+    {
+        HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart10_manage_object.rx_buffer, g_uart10_manage_object.rx_buffer_length);
     }
 }
 
@@ -239,6 +252,14 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         }
         HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart8_manage_object.rx_buffer, g_uart8_manage_object.rx_buffer_length);
     }
+    else if (huart->Instance == USART10)
+    {
+        if(g_uart10_manage_object.callback_function != nullptr)
+        {
+            g_uart10_manage_object.callback_function(g_uart10_manage_object.rx_buffer, Size);
+        }
+        HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart10_manage_object.rx_buffer, g_uart10_manage_object.rx_buffer_length);
+    }
 }
 
 /**
@@ -279,6 +300,10 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
     else if (huart->Instance == UART8)
     {
         HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart8_manage_object.rx_buffer, g_uart8_manage_object.rx_buffer_length);
+    }
+    else if (huart->Instance == USART10)
+    {
+        HAL_UARTEx_ReceiveToIdle_DMA(huart, g_uart10_manage_object.rx_buffer, g_uart10_manage_object.rx_buffer_length);
     }
 }
 
