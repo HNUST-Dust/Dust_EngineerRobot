@@ -1,17 +1,45 @@
 #pragma once
-#include "dvc_motor_dji.h"
-#include "dvc_motor_dm.h"
+
+#include <memory>
+
+#include "../Algorithm/control/alg_pid.h"
+
+#include "../Device/motors/dji_c6xx.hpp"
+#include "../Device/motors/dm_mit.hpp"
 
 class Arm {
 public:
-    MotorDmNormal claws_;
+    static Arm& Instance()
+    {
+        static Arm instance;
+        return instance;
+    }
 
-    MotorDmNormal elbow_joint_yaw_;
-    MotorDmNormal elbow_joint_pitch_;
+    // 纯协议层电机（上层持有，禁止默认构造)
 
-    // 手腕关节
-    MotorDjiC610 wrist_joint_left_;
-    MotorDjiC610 wrist_joint_right_;
+    // 手腕 PID（上层角度控制 -> 输出电流）
+    alg::Pid wrist_left_pid_angle_;
+    alg::Pid wrist_left_pid_omega_;
+    alg::Pid wrist_right_pid_angle_;
+    alg::Pid wrist_right_pid_omega_;
+
+    // ---- 外置串级 PID（位置环->速度环->输出）----
+    // claws
+    alg::Pid claws_pid_angle_;
+    alg::Pid claws_pid_omega_;
+
+    // elbow pitch
+    alg::Pid elbow_pitch_pid_angle_;
+    alg::Pid elbow_pitch_pid_omega_;
+
+    // elbow yaw
+    alg::Pid elbow_yaw_pid_angle_;
+    alg::Pid elbow_yaw_pid_omega_;
+
+    // ---- 目标量（单位：rad / rad/s）----
+    float claws_target_angle_rad_ = 0.0f;
+    float elbow_pitch_target_angle_rad_ = 0.0f;
+    float elbow_yaw_target_angle_rad_ = 0.0f;
 
     constexpr static float kClawsSensitivity = 0.001f;
     float claws_virtual_angle_ = 0.0f;
@@ -28,21 +56,19 @@ public:
     void Init();
     void Task();
 
-    // 手爪：只传虚拟角度，正负表示开/合方向
     void ControlClaw(float virtual_angle);
-
-    // 肘关节：统一只传虚拟角度
-    // 说明：此接口默认控制pitch（翻转）轴；yaw请使用ControlElbowYawJoint
     void ControlElbowJoint(float virtual_angle);
 
     void ControlElbowPitchJoint(float virtual_angle);
     void ControlElbowYawJoint(float virtual_angle);
 
-    // 手腕：输入 twist/flip 的增量角度，内部完成左右联动并下发目标角
-    // 约定：flip > 0 为向上翻转；twist > 0 为向右扭转
     void ControlWristByTwistFlip(float twist_delta, float flip_delta);
 
 private:
+    Arm() = default;
+    Arm(const Arm&) = delete;
+    Arm& operator=(const Arm&) = delete;
+
     static constexpr float kClawsLimit = 0.35f;
 
     static constexpr float kWristJointFlipLimit = 1.0f;
@@ -53,3 +79,6 @@ private:
 
     static void TaskEntry(void *param);
 };
+
+// 兼容层（可逐步移除）：保留旧函数名，内部转发到 Instance()
+inline Arm& ArmInstance() { return Arm::Instance(); }

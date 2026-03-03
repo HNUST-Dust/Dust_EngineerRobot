@@ -14,7 +14,11 @@
 
 // module
 #include "debug_tools.h"
-#include "dvc_motor_dji.h"
+#include "motors/dji_c6xx.hpp"
+
+#include <memory>
+
+#include "control/alg_pid.h"
 
 /**
  * x
@@ -26,11 +30,17 @@
 class Chassis
 {
 public:
-    // 底盘4个3508， 控制全向轮
-    MotorDjiC620 motor_chassis_1_,
-                 motor_chassis_2_,
-                 motor_chassis_3_,
-                 motor_chassis_4_;
+    static Chassis& Instance()
+    {
+        static Chassis instance;
+        return instance;
+    }
+
+    // 底盘四电机速度环 PID（rad/s -> A）
+    alg::Pid pid_omega_1_;
+    alg::Pid pid_omega_2_;
+    alg::Pid pid_omega_3_;
+    alg::Pid pid_omega_4_;
 
     DebugTools  debug_tools_;
     void Init();
@@ -57,7 +67,19 @@ protected:
     void KinematicsInverseResolution();
     void RotationMatrixTransform();
     void OutputToMotor();
+
+    // 运动学逆解得到的四轮目标角速度（rad/s）
+    float target_wheel_omega_1_rad_s_ = 0.0f;
+    float target_wheel_omega_2_rad_s_ = 0.0f;
+    float target_wheel_omega_3_rad_s_ = 0.0f;
+    float target_wheel_omega_4_rad_s_ = 0.0f;
+
     static void TaskEntry(void *param);  // FreeRTOS 入口，静态函数
+
+private:
+    Chassis() = default;
+    Chassis(const Chassis&) = delete;
+    Chassis& operator=(const Chassis&) = delete;
 };
 
 /**
@@ -115,5 +137,8 @@ inline void Chassis::SetYawAngle(float yaw_angle)
 {
     yaw_angle_ = yaw_angle;
 }
+
+// 兼容层（可逐步移除）：保留旧函数名，内部转发到 Instance()
+inline Chassis& ChassisInstance() { return Chassis::Instance(); }
 
 #endif // !APP_CHASSIS_H_

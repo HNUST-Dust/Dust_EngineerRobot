@@ -2,6 +2,7 @@
 
 file(GLOB_RECURSE BOARD_SOURCES CONFIGURE_DEPENDS
     "Src/*.c" "Src/*.cpp" "Src/*.s" "Src/*.S"
+    "Port/*.c" "Port/*.cpp" "Port/*.s" "Port/*.S"
     "startup_stm32h723vgtx.s" "startup_stm32h723vgtx.S"
 )
 

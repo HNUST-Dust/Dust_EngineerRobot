@@ -47,6 +47,7 @@ function(dust_configure_options options_target)
         ${CMAKE_SOURCE_DIR}/daemon_supervisor
         ${CMAKE_SOURCE_DIR}/Communication
         ${CMAKE_SOURCE_DIR}/Drivers
+        ${CMAKE_SOURCE_DIR}/Platform
         ${CMAKE_SOURCE_DIR}/ThirdParty/SEGGER/Config
         ${CMAKE_SOURCE_DIR}/ThirdParty/SEGGER/RTT
     )
