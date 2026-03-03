@@ -57,8 +57,8 @@ void Gantry::Init() {
     // Z angle -> omega_ref
     {
         alg::PidConfig cfg;
-        cfg.kp = 5.0f;
-        cfg.ki = 0.0f;
+        cfg.kp = 10.0f;
+        cfg.ki = 0.1f;
         cfg.kd = 0.1f;
         cfg.kf = 0.0f;
         cfg.i_out_max = 29.0f;

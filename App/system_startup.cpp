@@ -68,9 +68,9 @@ static void can1_port_callback(const BspCanFrame* frame)
 {
     if (!frame) return;
 
-    if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
-        return;
-    }
+    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
+    //     return;
+    // }
 
     switch (frame->id)
     {
@@ -97,13 +97,13 @@ static void can1_port_callback(const BspCanFrame* frame)
 static void can2_port_callback(const BspCanFrame* frame)
 {
     if (!frame) return;
-    if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
-        return;
-    }
+    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
+    //     return;
+    // }
 
     switch (frame->id)
     {
-        case 0x00:
+        case 0x000:
             g_motor_z_axis_left.CanRxCpltCallback(frame);
             break;
         case 0x201:
@@ -120,9 +120,9 @@ static void can2_port_callback(const BspCanFrame* frame)
 static void can3_port_callback(const BspCanFrame* frame)
 {
     if (!frame) return;
-    if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
-        return;
-    }
+    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
+    //     return;
+    // }
 
     switch (frame->id)
     {
