@@ -107,7 +107,7 @@ void Gantry::YAxisMoveInDistance(float distance) {
 }
 
 void Gantry::ZAxisMoveInDistance(float distance) {
-    distance = Clamp(distance, -Z_AXIS_DISTANCE_LIMIT, Z_AXIS_DISTANCE_LIMIT);
+    distance = Clamp(distance, -Z_AXIS_DISTANCE_LIMIT, 0);
     z_target_angle_rad_ = distance;
 }
 

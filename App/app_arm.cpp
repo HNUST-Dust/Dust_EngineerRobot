@@ -22,7 +22,7 @@ void Arm::Init() {
         cfg.kf = 1.0f;
         cfg.i_out_max = 29.0f;
         cfg.out_max = 29.0f;
-        cfg.dt = 0.002f;
+        cfg.dt = 0.001f;
         wrist_left_pid_angle_.configure(cfg);
         wrist_right_pid_angle_.configure(cfg);
     }
@@ -34,7 +34,7 @@ void Arm::Init() {
         cfg.kf = 0.0f;
         cfg.i_out_max = 9.0f;
         cfg.out_max = 9.0f;
-        cfg.dt = 0.002f;
+        cfg.dt = 0.001f;
         wrist_left_pid_omega_.configure(cfg);
         wrist_right_pid_omega_.configure(cfg);
     }
@@ -75,9 +75,9 @@ void Arm::Init() {
         cfg.ki = 2.8f;
         cfg.kd = 0.002f;
         cfg.kf = 0.0f;
-        cfg.i_out_max = 9.0f;
-        cfg.out_max = 9.0f; // 改正
-        cfg.dt = 0.002f;
+        cfg.i_out_max = 29.0f;
+        cfg.out_max = 29.0f; // 改正
+        cfg.dt = 0.001f;
         elbow_pitch_pid_angle_.configure(cfg);
     }
     {
@@ -86,9 +86,9 @@ void Arm::Init() {
         cfg.ki = 2.0f;
         cfg.kd = 0.0f;
         cfg.kf = 1.0f;
-        cfg.i_out_max = 28.0f;
-        cfg.out_max = 28.0f; //改正
-        cfg.dt = 0.002f;
+        cfg.i_out_max = 9.0f;
+        cfg.out_max = 9.0f; //改正
+        cfg.dt = 0.001f;
         cfg.i_variable_speed_A = 0.0f;
         cfg.i_variable_speed_B = 0.0f;
         cfg.i_separate_threshold = 0.0f;
@@ -105,9 +105,9 @@ void Arm::Init() {
         cfg.ki = 1.8f;
         cfg.kd = 0.002f;
         cfg.kf = 0.0f;
-        cfg.i_out_max = 28.0f;
-        cfg.out_max = 28.0f;
-        cfg.dt = 0.002f;
+        cfg.i_out_max = 29.0f;
+        cfg.out_max = 29.0f;
+        cfg.dt = 0.001f;
         elbow_yaw_pid_angle_.configure(cfg);
     }
     {
@@ -118,7 +118,7 @@ void Arm::Init() {
         cfg.kf = 1.0f;
         cfg.i_out_max = 9.0f;
         cfg.out_max = 9.0f;
-        cfg.dt = 0.002f;
+        cfg.dt = 0.001f;
         cfg.i_variable_speed_A = 0.0f;
         cfg.i_variable_speed_B = 0.0f;
         cfg.i_separate_threshold = 0.0f;
@@ -133,17 +133,22 @@ void Arm::Init() {
     elbow_yaw_target_angle_rad_ = 0.0f;
 
     // DM 电机上电流程（若已注入）
-    actuator::instances::g_claws.BringUpDefault();
-    actuator::instances::g_claws.SetTarget(0.0f, 0.0f, 0.0f);
-    actuator::instances::g_claws.PublishMitTx(0.0f, 0.0f);
+    // actuator::instances::g_claws.BringUpDefault();
+    // actuator::instances::g_claws.SetTarget(0.0f, 0.0f, 0.0f);
+    // actuator::instances::g_claws.PublishMitTx(0.0f, 0.0f);
 
-    actuator::instances::g_elbow_joint_pitch.BringUpDefault();
-    actuator::instances::g_elbow_joint_pitch.SetTarget(0.0f, 0.0f, 0.0f);
-    actuator::instances::g_elbow_joint_pitch.PublishMitTx(0.0f, 0.0f);
+    // actuator::instances::g_elbow_joint_pitch.BringUpDefault();
+    // actuator::instances::g_elbow_joint_pitch.SetTarget(0.0f, 0.0f, 0.0f);
+    // actuator::instances::g_elbow_joint_pitch.PublishMitTx(0.0f, 0.0f);
 
-    actuator::instances::g_elbow_joint_yaw.BringUpDefault();
-    actuator::instances::g_elbow_joint_yaw.SetTarget(0.0f, 0.0f, 0.0f);
-    actuator::instances::g_elbow_joint_yaw.PublishMitTx(0.0f, 0.0f);
+    // actuator::instances::g_elbow_joint_yaw.BringUpDefault();
+    // actuator::instances::g_elbow_joint_yaw.SetTarget(0.0f, 0.0f, 0.0f);
+    // actuator::instances::g_elbow_joint_yaw.PublishMitTx(0.0f, 0.0f);
+
+    actuator::instances::g_claws.Enter();
+    actuator::instances::g_elbow_joint_pitch.Enter();
+    actuator::instances::g_elbow_joint_yaw.Enter();
+    osDelay(1000);
 
     static const osThreadAttr_t kArmTaskAttr = {
         .name = "arm_task",
@@ -211,34 +216,34 @@ void Arm::Task() {
     for (;;) {
         (void)rc_sub.copy(rc);
 
-        // 新 RcControl 不含开关：默认使能（如需模式控制建议另加 mode topic）
-        const bool enable = true;
+        // // 新 RcControl 不含开关：默认使能（如需模式控制建议另加 mode topic）
+        // const bool enable = true;
 
-        if (enable != last_enable) {
-            // 模式切换时清理状态，避免积分/虚拟角跳变
-            claws_pid_angle_.reset();
-            claws_pid_omega_.reset();
-            elbow_pitch_pid_angle_.reset();
-            elbow_pitch_pid_omega_.reset();
-            elbow_yaw_pid_angle_.reset();
-            elbow_yaw_pid_omega_.reset();
-            wrist_left_pid_angle_.reset();
-            wrist_left_pid_omega_.reset();
-            wrist_right_pid_angle_.reset();
-            wrist_right_pid_omega_.reset();
+        // if (enable != last_enable) {
+        //     // 模式切换时清理状态，避免积分/虚拟角跳变
+        //     claws_pid_angle_.reset();
+        //     claws_pid_omega_.reset();
+        //     elbow_pitch_pid_angle_.reset();
+        //     elbow_pitch_pid_omega_.reset();
+        //     elbow_yaw_pid_angle_.reset();
+        //     elbow_yaw_pid_omega_.reset();
+        //     wrist_left_pid_angle_.reset();
+        //     wrist_left_pid_omega_.reset();
+        //     wrist_right_pid_angle_.reset();
+        //     wrist_right_pid_omega_.reset();
 
-            claws_virtual_angle_ = 0.0f;
-            wrist_joint_left_virtual_angle_ = 0.0f;
-            wrist_joint_right_virtual_angle_ = 0.0f;
-            elbow_pitch_joint_virtual_angle_ = 0.0f;
-            elbow_yaw_joint_virtual_angle_ = 0.0f;
+        //     claws_virtual_angle_ = 0.0f;
+        //     wrist_joint_left_virtual_angle_ = 0.0f;
+        //     wrist_joint_right_virtual_angle_ = 0.0f;
+        //     elbow_pitch_joint_virtual_angle_ = 0.0f;
+        //     elbow_yaw_joint_virtual_angle_ = 0.0f;
 
-            claws_target_angle_rad_ = 0.0f;
-            elbow_pitch_target_angle_rad_ = 0.0f;
-            elbow_yaw_target_angle_rad_ = 0.0f;
+        //     claws_target_angle_rad_ = 0.0f;
+        //     elbow_pitch_target_angle_rad_ = 0.0f;
+        //     elbow_yaw_target_angle_rad_ = 0.0f;
 
-            last_enable = enable;
-        }
+        //     last_enable = enable;
+        // }
 
         float claws_torque = 0.0f;
         float elbow_pitch_torque = 0.0f;
@@ -296,12 +301,9 @@ void Arm::Task() {
             actuator::instances::g_wrist_joint_right.UpdateSlot(); // 写入槽位缓冲，由 Gantry 任务统一 Flush
         }
 
-        // 腕关节电流已通过 SetTargetCurrent 写入，由 can3_send_task 统一发送
-
-
         // 发布状态
         orb::ArmState st{};
-        st.enable = enable;
+        // st.enable = enable;
         st.last_cmd_claws = rc.arm_claw_angle;
         st.last_cmd_wrist_left = rc.arm_wrist_yaw_angle;
         st.last_cmd_wrist_right = rc.arm_wrist_pitch_angle;

@@ -9,15 +9,12 @@ namespace actuator::drivers {
 class DmMitMin final {
 public:
     struct Config {
-        // 纯协议层：保留 bus 字段供上层索引（不依赖 Topic 系统）
         uint8_t bus = 1; // 1->CAN1, 2->CAN2 (由上层自行约定)
 
-        // 该电机的低 4bit ID（MIT 协议 frame[0] 低4位）
+        // 电机的 CAN ID，同时作为发送帧 std_id
         uint8_t can_rx_id = 0x01;
 
-        // MIT 协议发送 std_id 基址：高位部分（低 4bit 放 can_rx_id）
-        // 若为 0，默认使用 (master_id << 4)
-        uint16_t base_std_id = 0x00;
+        // 主机 ID（用于过滤反馈帧 byte0 高4bit，通常不需要修改）
         uint8_t master_id = 0x01;
 
         float angle_max = 12.5f;
@@ -64,7 +61,7 @@ public:
 
     uint8_t bus() const { return cfg_.bus; }
     uint16_t rx_id() const { return static_cast<uint16_t>(cfg_.can_rx_id); }
-    uint16_t tx_id() const { return cfg_.base_std_id; }
+    uint16_t tx_id() const { return static_cast<uint16_t>(cfg_.can_rx_id); }
 
     // ---- 纯协议层工具函数：MIT 协议打包 ----
     static void PackMit(float p, float v, float kp, float kd, float t, uint8_t out[8],

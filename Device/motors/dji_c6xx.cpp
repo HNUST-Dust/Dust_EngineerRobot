@@ -31,9 +31,9 @@ void DjiC6xxMin::CanRxCpltCallback(const BspCanFrame* frame) {
     if (!frame) {
         return;
     }
-    if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8u) {
-        return;
-    }
+    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8u) {
+    //     return;
+    // }
     if (frame->id != cfg_.rx_std_id) {
         return;
     }

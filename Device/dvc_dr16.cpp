@@ -82,6 +82,13 @@ void Dr16::RxCpltCallback(uint8_t* buffer, uint16_t length)
 
     orb::RcControl info{};
 
+    // 无论哪个模式，始终把各积累量填入 info，保证切模式时其他轴保持不变
+    info.arm_wrist_yaw_angle     = wrist_yaw_acc;
+    info.arm_wrist_pitch_angle   = wrist_pitch_acc;
+    info.arm_elbow_pitch_angle   = elbow_pitch_acc;
+    info.arm_elbow_yaw_angle     = elbow_yaw_acc;
+    info.gantry_z_axis_distance  = gantry_z_acc;
+
     switch (tmp.switch1) {
     case 1: {
         // chassis
@@ -113,7 +120,7 @@ void Dr16::RxCpltCallback(uint8_t* buffer, uint16_t length)
         info.gantry_x_axis_distance = left_stick_y * kGantryAccStep;
         info.gantry_y_axis_distance = left_stick_x * kGantryAccStep;
         // Z 在 DR16 侧积累，发布目标角度
-        gantry_z_acc += right_stick_y * kGantryAccStep;
+        gantry_z_acc -= right_stick_y * kGantryAccStep;
         if (gantry_z_acc >  kGantryZLimit) gantry_z_acc =  kGantryZLimit;
         if (gantry_z_acc < -kGantryZLimit) gantry_z_acc = -kGantryZLimit;
         info.gantry_z_axis_distance = gantry_z_acc;

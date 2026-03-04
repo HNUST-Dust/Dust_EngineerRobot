@@ -1,5 +1,6 @@
 #include "dm_mit.hpp"
 
+#include "cmsis_os2.h"
 #include "utils/alg_constrain.h"
 #include "utils/alg_quantize.hpp"
 
@@ -12,29 +13,12 @@ namespace actuator::drivers {
 
 namespace {
 using alg::float_constrain;
-
-static inline uint16_t resolve_base_std_id(uint16_t base_std_id, uint8_t master_id)
-{
-    if (base_std_id != 0) {
-        return base_std_id;
-    }
-    // 默认 std_id 基址：以 master_id 左移 4bit 形成高位（低 4bit 放 can_rx_id）。
-    return static_cast<uint16_t>(master_id) << 4;
-}
-
-static inline uint16_t mit_std_id(uint16_t base_std_id, uint8_t can_rx_id)
-{
-    return static_cast<uint16_t>(base_std_id) | static_cast<uint16_t>(can_rx_id & 0x0F);
-}
-
 } // namespace
 
 void DmMitMin::Init(BspCanHandle can, const Config& cfg)
 {
     can_ = can;
     cfg_ = cfg;
-
-    cfg_.base_std_id = resolve_base_std_id(cfg_.base_std_id, cfg_.master_id);
 
     now_angle_ = 0.0f;
     now_total_angle_ = 0.0f;
@@ -139,7 +123,7 @@ BspCanFrame DmMitMin::MakeMitFrame(uint16_t base_std_id, uint8_t can_rx_id,
                                   float pmax, float vmax, float kpmax, float kdmax, float tmax)
 {
     BspCanFrame out{};
-    out.id = mit_std_id(base_std_id, can_rx_id);
+    out.id = static_cast<uint16_t>(base_std_id) | static_cast<uint16_t>(can_rx_id);
     out.len = 8;
     out.id_type = BSP_CAN_ID_STD;
     out.frame_type = BSP_CAN_FRAME_DATA;
@@ -154,7 +138,7 @@ BspCanFrame DmMitMin::MakeMitFrame(uint16_t base_std_id, uint8_t can_rx_id,
 BspCanFrame DmMitMin::MakeAdminFrame(uint16_t base_std_id, uint8_t can_rx_id, uint8_t tail)
 {
     BspCanFrame out{};
-    out.id = mit_std_id(base_std_id, can_rx_id);
+    out.id = static_cast<uint16_t>(base_std_id) | static_cast<uint16_t>(can_rx_id);
     out.len = 8;
     out.id_type = BSP_CAN_ID_STD;
     out.frame_type = BSP_CAN_FRAME_DATA;
@@ -192,7 +176,7 @@ void DmMitMin::PublishMitTx(float kp, float kd) {
     PackMit(ctrl_angle_, ctrl_omega_, kp, kd, ctrl_torque_, data,
             cfg_.angle_max, cfg_.omega_max, 500.0f, 5.0f, cfg_.torque_max);
 
-    PublishFrame(mit_std_id(cfg_.base_std_id, cfg_.can_rx_id), data, 8);
+    PublishFrame(cfg_.can_rx_id, data, 8);
 }
 
 void DmMitMin::PublishAdminTail(uint8_t tail)
@@ -202,7 +186,7 @@ void DmMitMin::PublishAdminTail(uint8_t tail)
         data[i] = 0xFF;
     }
     data[7] = tail;
-    PublishFrame(mit_std_id(cfg_.base_std_id, cfg_.can_rx_id), data, 8);
+    PublishFrame(cfg_.can_rx_id, data, 8);
 }
 
 void DmMitMin::Enter() { PublishAdminTail(0xFC); }
@@ -212,16 +196,10 @@ void DmMitMin::SaveZero() { PublishAdminTail(0xFE); }
 
 void DmMitMin::BringUpDefault()
 {
-    static constexpr float kDelaySaveZeroS = 1.0f;
-    static constexpr float kDelayClearErrorS = 1.0f;
-    static constexpr float kDelayEnterS = 1.0f;
-
-    SaveZero();
-    dwt_delay(kDelaySaveZeroS);
     ClearError();
-    dwt_delay(kDelayClearErrorS);
+    osDelay(100);
     Enter();
-    dwt_delay(kDelayEnterS);
+    osDelay(1000);
 }
 
 } // namespace actuator::drivers

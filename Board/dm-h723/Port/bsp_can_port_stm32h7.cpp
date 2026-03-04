@@ -17,6 +17,7 @@ struct BspCanOpaque {
 
 static BspCanOpaque s_can1{&hfdcan1, {nullptr}, 0, false};
 static BspCanOpaque s_can2{&hfdcan2, {nullptr}, 0, false};
+static BspCanOpaque s_can3{&hfdcan3, {nullptr}, 0, false};
 
 static inline BspCanOpaque* to_impl(BspCanHandle h) {
     return reinterpret_cast<BspCanOpaque*>(h);
@@ -26,6 +27,7 @@ static inline BspCanOpaque* from_hal(FDCAN_HandleTypeDef* hfdcan)
 {
     if (hfdcan == &hfdcan1) return &s_can1;
     if (hfdcan == &hfdcan2) return &s_can2;
+    if (hfdcan == &hfdcan3) return &s_can3;
     return nullptr;
 }
 
@@ -35,7 +37,7 @@ BspCanHandle bsp_can_get(BspCanBus bus)
     {
         case BSP_CAN_BUS1: return reinterpret_cast<BspCanHandle>(&s_can1);
         case BSP_CAN_BUS2: return reinterpret_cast<BspCanHandle>(&s_can2);
-        case BSP_CAN_BUS3: return nullptr;
+        case BSP_CAN_BUS3: return reinterpret_cast<BspCanHandle>(&s_can3);
         default:           return nullptr;
     }
 }
@@ -169,7 +171,7 @@ bool bsp_can_send(BspCanHandle h, const BspCanFrame* tx)
     th.TxFrameType = (tx->frame_type == BSP_CAN_FRAME_DATA) ? FDCAN_DATA_FRAME : FDCAN_REMOTE_FRAME;
     th.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     th.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    th.MessageMarker = 0;
+    th.MessageMarker = 0; 
 
     if (tx->is_fd) {
         th.FDFormat = FDCAN_FD_CAN;

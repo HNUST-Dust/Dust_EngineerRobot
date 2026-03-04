@@ -251,7 +251,6 @@ void modules_bringup(void)
         cfg.bus = 3;
         cfg.master_id = 0x11;
         cfg.can_rx_id = 0x01;
-        cfg.base_std_id = 0x00;
         cfg.angle_max = 12.5f;
         cfg.omega_max = 29.0f;
         cfg.torque_max = 10.0f;
@@ -262,7 +261,6 @@ void modules_bringup(void)
         cfg.bus = 3;
         cfg.master_id = 0x13;
         cfg.can_rx_id = 0x03;
-        cfg.base_std_id = 0x00;
         cfg.angle_max = 12.5f;
         cfg.omega_max = 10.0f;
         cfg.torque_max = 28.0f;
@@ -273,7 +271,6 @@ void modules_bringup(void)
         cfg.bus = 3;
         cfg.master_id = 0x12;
         cfg.can_rx_id = 0x02;
-        cfg.base_std_id = 0x00;
         cfg.angle_max = 12.5f;
         cfg.omega_max = 45.0f;
         cfg.torque_max = 10.0f;
