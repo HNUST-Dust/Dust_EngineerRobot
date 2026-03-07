@@ -111,8 +111,8 @@ void Gantry::YAxisMoveInSpeed(float speed) {
 
 void Gantry::ZAxisMoveInSpeed(float speed) {
     speed = Clamp(speed, -Z_AXIS_SPEED_LIMIT, Z_AXIS_SPEED_LIMIT);
-    motor_z_axis_left_.SetOmega(speed);
-    motor_z_axis_right_.SetOmega(-speed);
+    motor_z_axis_left_.SetOmega(-speed);
+    motor_z_axis_right_.SetOmega(speed);
 }
 
 void Gantry::Task() {
