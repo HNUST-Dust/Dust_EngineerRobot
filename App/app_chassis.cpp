@@ -8,7 +8,8 @@
 #include "../communication_topic/rc_control_topics.hpp"
 
 #include "../Device/motors/motor_instances.hpp"
-
+#include "FreeRTOS.h"
+#include "projdefs.h"
 namespace {
 using actuator::instances::g_motor_chassis_1;
 using actuator::instances::g_motor_chassis_2;
@@ -152,7 +153,7 @@ void Chassis::Task()
         cmd.vy = rc.chassis_y_speed * kChassisSpeed;
         cmd.wz = rc.chassis_rotation_speed * kChassisSpeed;
 
-        
+
         // 向外发布（可选）
         orb::chassis_cmd.publish(cmd);
 
@@ -204,7 +205,7 @@ void Chassis::Task()
 
         orb::chassis_state.publish(st);
 
-        osDelay(1);
+        osDelay(pdMS_TO_TICKS(1));
     }
 }
 

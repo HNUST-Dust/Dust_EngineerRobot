@@ -22,6 +22,11 @@ public:
 
         float current_limit = 20.0f;
         uint16_t enc_per_round = 8192;
+
+        // 电流(A) -> CAN raw 的换算系数
+        // C620(M3508): 16384.0f / 20.0f = 819.2  (默认)
+        // C610(M2006): 10000.0f / 10.0f = 1000.0
+        float current_to_raw = 16384.0f / 20.0f;
     };
 
     // Init 时自动将自身注册到 (can, tx_std_id) 对应的发送组，slot 由 rx_std_id - tx_std_id 确定

@@ -37,9 +37,6 @@ void DmMitMin::CanRxCpltCallback(const BspCanFrame* frame) {
     if (!frame) {
         return;
     }
-    if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8u) {
-        return;
-    }
 
     const uint8_t* data = frame->data;
 
@@ -50,13 +47,9 @@ void DmMitMin::CanRxCpltCallback(const BspCanFrame* frame) {
     // byte4-5: torque (12)
     // byte6: mos temp
     // byte7: rotor temp
-    const uint8_t id4 = (data[0] & 0x0F);
-    if (id4 != (cfg_.can_rx_id & 0x0F)) {
-        return;
-    }
 
     const uint8_t status4 = (data[0] >> 4);
-    now_status_ = (status4 & 0x0F);
+    now_status_     = static_cast<Status>(status4 & 0x0F);
     now_mos_temp_c_ = data[6];
     now_rotor_temp_c_ = data[7];
 
@@ -172,6 +165,18 @@ void DmMitMin::PublishFrame(uint16_t std_id, const uint8_t data[8], uint8_t len)
 }
 
 void DmMitMin::PublishMitTx(float kp, float kd) {
+    // 不做状态拦截：仿照旧版 SendPeriodElapsedCallback 逻辑——
+    //   ENABLE   → 发控制帧（下方正常执行）
+    //   DISABLE  → 发 Enter，同时也发控制帧（让电机尽快响应）
+    //   error    → 发 ClearError，同时也发控制帧
+    // 之所以不 return：旧版 Output() 在 ENABLE 时无条件发送；
+    // 新版初始 now_status_==DISABLE（反馈帧还没来），若 return 则控制帧永远发不出。
+    if (is_error()) {
+        ClearError();
+    } else if (!is_enabled()) {
+        Enter();
+    }
+
     uint8_t data[8];
     PackMit(ctrl_angle_, ctrl_omega_, kp, kd, ctrl_torque_, data,
             cfg_.angle_max, cfg_.omega_max, 500.0f, 5.0f, cfg_.torque_max);

@@ -8,6 +8,8 @@
 #include "../Device/motors/motor_instances.hpp"
 
 #include <cmath>
+#include "FreeRTOS.h"
+#include "projdefs.h"
 
 namespace {
 using actuator::instances::g_motor_x_axis_left;
@@ -44,13 +46,13 @@ void Gantry::Init() {
     // Y omega（速度控制）
     {
         alg::PidConfig cfg;
-        cfg.kp = 2.0f;
+        cfg.kp = 1.0f;
         cfg.ki = 0.0f;
         cfg.kd = 0.0f;
         cfg.kf = 0.0f;
         cfg.i_out_max = 9.0f;
         cfg.out_max = 9.0f;
-        cfg.dt = 0.01f;
+        cfg.dt = 0.001f;
         y_pid_omega_.configure(cfg);
     }
 
@@ -166,7 +168,7 @@ void Gantry::Task()
         }
         // CAN3/0x200 组帧：y_axis(slot1) + wrist_left(slot2) + wrist_right(slot3)
         // Arm 任务已通过 UpdateSlot() 更新 wrist 槽位，此处统一 Flush
-        actuator::drivers::DjiC6xxMin::FlushGroup(g_motor_y_axis);
+        // actuator::drivers::DjiC6xxMin::FlushGroup(g_motor_y_axis);
 
         // ---- Z axis (Cubemars) ----
         {
@@ -205,7 +207,7 @@ void Gantry::Task()
         st.z_left_torque     = g_motor_z_axis_left.now_torque_nm();
         orb::gantry_state.publish(st);
 
-        osDelay(10); // 100Hz
+        osDelay(pdMS_TO_TICKS(10)); // 100Hz
     }
 }
 

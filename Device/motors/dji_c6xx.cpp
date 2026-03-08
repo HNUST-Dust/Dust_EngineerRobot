@@ -31,12 +31,6 @@ void DjiC6xxMin::CanRxCpltCallback(const BspCanFrame* frame) {
     if (!frame) {
         return;
     }
-    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8u) {
-    //     return;
-    // }
-    if (frame->id != cfg_.rx_std_id) {
-        return;
-    }
 
     const uint8_t* data = frame->data;
     const uint16_t enc = (static_cast<uint16_t>(data[0]) << 8) | static_cast<uint16_t>(data[1]);
@@ -76,7 +70,7 @@ void DjiC6xxMin::SetTargetCurrent(float current) {
 
 int16_t DjiC6xxMin::target_current_raw() const {
     const float a = float_constrain(target_current_, -cfg_.current_limit, cfg_.current_limit);
-    return static_cast<int16_t>(a * (16384.0f / 20.0f));
+    return static_cast<int16_t>(a * cfg_.current_to_raw);
 }
 
 void DjiC6xxMin::PackGroupCurrent(int16_t i0, int16_t i1, int16_t i2, int16_t i3, uint8_t out[8])

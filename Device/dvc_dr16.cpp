@@ -74,15 +74,18 @@ void Dr16::RxCpltCallback(uint8_t* buffer, uint16_t length)
     static float wrist_pitch_acc = 0.0f;
     static float wrist_yaw_acc   = 0.0f;
     static float gantry_z_acc    = 0.0f;
+    static float claw_acc        = 0.0f;  // 夹爪也需要跨帧累积
 
-    constexpr float kElbowAccStep  = 1.0f;
-    constexpr float kWristAccStep  = 1.0f;
+    constexpr float kClawsAccStep = 0.014f;  // 旧版 kClawsSensitivity(0.001) × (1000Hz/70Hz)
+    constexpr float kElbowAccStep  = 0.014f;  // 旧版 kElbowPitchSensitivity(0.001) × (1000Hz/70Hz)
+    constexpr float kWristAccStep  = 0.029f;  // 旧版 kWristSensitivity(0.002) × (1000Hz/70Hz)
     constexpr float kGantryAccStep = 1.0f;
     constexpr float kGantryZLimit  = 100.0f; // 与 app_gantry.h Z_AXIS_DISTANCE_LIMIT 对齐
 
     orb::RcControl info{};
 
     // 无论哪个模式，始终把各积累量填入 info，保证切模式时其他轴保持不变
+    info.arm_claw_angle          = claw_acc;
     info.arm_wrist_yaw_angle     = wrist_yaw_acc;
     info.arm_wrist_pitch_angle   = wrist_pitch_acc;
     info.arm_elbow_pitch_angle   = elbow_pitch_acc;
@@ -99,7 +102,8 @@ void Dr16::RxCpltCallback(uint8_t* buffer, uint16_t length)
     }
     case 2: {
         // arm
-        info.arm_claw_angle = -right_stick_x;
+        claw_acc -= right_stick_x * kClawsAccStep;  // 跨帧累积
+        info.arm_claw_angle = claw_acc;
 
         // wrist: 积累
         wrist_yaw_acc += wheel * kWristAccStep;

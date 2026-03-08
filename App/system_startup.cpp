@@ -63,14 +63,9 @@ void uart10_debug_callback(uint8_t *buffer, uint16_t length)
     //VT03::Instance().RxCpltCallback(buffer, length);
 }
 
-// 适配 bsp_can_port 的回调签名
 static void can1_port_callback(const BspCanFrame* frame)
 {
     if (!frame) return;
-
-    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
-    //     return;
-    // }
 
     switch (frame->id)
     {
@@ -97,9 +92,6 @@ static void can1_port_callback(const BspCanFrame* frame)
 static void can2_port_callback(const BspCanFrame* frame)
 {
     if (!frame) return;
-    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
-    //     return;
-    // }
 
     switch (frame->id)
     {
@@ -120,9 +112,6 @@ static void can2_port_callback(const BspCanFrame* frame)
 static void can3_port_callback(const BspCanFrame* frame)
 {
     if (!frame) return;
-    // if (frame->id_type != BSP_CAN_ID_STD || frame->frame_type != BSP_CAN_FRAME_DATA || frame->len < 8) {
-    //     return;
-    // }
 
     switch (frame->id)
     {
@@ -240,6 +229,7 @@ void modules_bringup(void)
         cfg.tx_std_id = 0x200;
         cfg.gearbox_ratio = 36.0f;
         cfg.current_limit = 10.0f;
+        cfg.current_to_raw = 10000.0f / 10.0f; // C610(M2006)
         ::actuator::instances::g_motor_y_axis.Init(s_can3, cfg);
     }
 
@@ -283,6 +273,7 @@ void modules_bringup(void)
         cfg.tx_std_id = 0x200;
         cfg.gearbox_ratio = 36.0f;
         cfg.current_limit = 10.0f;
+        cfg.current_to_raw = 10000.0f / 10.0f; // C610(M2006)
         ::actuator::instances::g_wrist_joint_left.Init(s_can3, cfg);
 
         cfg.rx_std_id = 0x203;
@@ -296,7 +287,6 @@ void app_bringup(void)
     Arm::Instance().Init();
     Gantry::Instance().Init();
 }
-
 void startup_thread(void *argument)
 {
     osDelay(1000);

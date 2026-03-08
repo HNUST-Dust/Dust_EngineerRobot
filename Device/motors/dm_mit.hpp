@@ -6,6 +6,23 @@
 
 namespace actuator::drivers {
 
+/**
+ * @brief 达妙电机控制状态, 传统模式有效
+ *
+ */
+enum Status
+{
+    MOTOR_DM_CONTROL_STATUS_DISABLE = 0x0,
+    MOTOR_DM_CONTROL_STATUS_ENABLE,
+    MOTOR_DM_CONTROL_STATUS_OVERVOLTAGE = 0x8,
+    MOTOR_DM_CONTROL_STATUS_UNDERVOLTAGE,
+    MOTOR_DM_CONTROL_STATUS_OVERCURRENT,
+    MOTOR_DM_CONTROL_STATUS_MOS_OVERTEMPERATURE,
+    MOTOR_DM_CONTROL_STATUS_ROTOR_OVERTEMPERATURE,
+    MOTOR_DM_CONTROL_STATUS_LOSE_CONNECTION,
+    MOTOR_DM_CONTROL_STATUS_MOS_OVERLOAD,
+};
+
 class DmMitMin final {
 public:
     struct Config {
@@ -50,9 +67,14 @@ public:
     float now_torque_nm() const { return now_torque_; }
 
     // 反馈附加信息（来自反馈帧 byte0/status、byte6/byte7 温度）
-    uint8_t now_status() const { return now_status_; }
+    Status  now_status_enum() const { return now_status_; }
     uint8_t now_mos_temp_c() const { return now_mos_temp_c_; }
     uint8_t now_rotor_temp_c() const { return now_rotor_temp_c_; }
+
+    // 是否处于使能状态
+    bool is_enabled() const { return now_status_ == MOTOR_DM_CONTROL_STATUS_ENABLE; }
+    // 是否处于错误状态（过压/欠压/过流/过温/过载等）
+    bool is_error() const { return now_status_ >= MOTOR_DM_CONTROL_STATUS_OVERVOLTAGE; }
 
     // 目标状态（单位：rad / rad/s / N·m）
     float target_angle_rad() const { return ctrl_angle_; }
@@ -84,7 +106,7 @@ private:
     float now_omega_ = 0.0f;
     float now_torque_ = 0.0f;
 
-    uint8_t now_status_ = 0;
+    Status  now_status_     = MOTOR_DM_CONTROL_STATUS_DISABLE;
     uint8_t now_mos_temp_c_ = 0;
     uint8_t now_rotor_temp_c_ = 0;
 
