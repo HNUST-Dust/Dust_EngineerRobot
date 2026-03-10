@@ -107,6 +107,8 @@ protected:
     // 电机对外接口数据
     MotorCubemarsRxData rx_data_;
 
+    bool rx_inited_ = false;
+
     // 最大位置, 与上位机控制幅值PMAX保持一致
     float angle_max_;
     // 最大速度, 与上位机控制幅值VMAX保持一致

@@ -39,6 +39,14 @@ void MotorCubemars::Init(
     angle_max_ = angle_max;
     omega_max_ = omega_max;
     torque_max_ = torque_max;
+
+    rx_data_.now_torque = 0.0f;
+    rx_data_.now_omega = 0.0f;
+    rx_data_.now_angle = 0.0f;
+    rx_data_.pre_encoder = 0;
+    rx_data_.total_encoder = 0;
+    rx_data_.total_round = 0;
+
 }
 
 /**
@@ -86,11 +94,12 @@ void MotorCubemars::Output() {
     
     uint16_t tmp_angle, tmp_omega, tmp_torque, tmp_k_p, tmp_k_d;
 
-    tmp_angle = math_float_to_int(control_angle_, 0, angle_max_, 0x7fff, (1 << 16) - 1);
-    tmp_omega = math_float_to_int(control_omega_, 0, omega_max_, 0x7ff, (1 << 12) - 1);
-    tmp_torque = math_float_to_int(control_torque_, 0, torque_max_, 0x7ff, (1 << 12) - 1);
-    tmp_k_p = math_float_to_int(k_p_, 0, 500.0f, 0, (1 << 12) - 1);
-    tmp_k_d = math_float_to_int(k_d_, 0, 5.0f, 0, (1 << 12) - 1);
+    // 保持原来的手动打包结构，但用对称范围映射（支持负速度/负扭矩），同时与接收端 math_int_to_float 匹配
+    tmp_angle = static_cast<uint16_t>(math_float_to_int(control_angle_, -angle_max_, angle_max_, 0, (1 << 16) - 1));
+    tmp_omega = static_cast<uint16_t>(math_float_to_int(control_omega_, -omega_max_, omega_max_, 0, (1 << 12) - 1));
+    tmp_torque = static_cast<uint16_t>(math_float_to_int(control_torque_, -torque_max_, torque_max_, 0, (1 << 12) - 1));
+    tmp_k_p = static_cast<uint16_t>(math_float_to_int(k_p_, 0, 500.0f, 0, (1 << 12) - 1));
+    tmp_k_d = static_cast<uint16_t>(math_float_to_int(k_d_, 0, 5.0f, 0, (1 << 12) - 1));
 
     tmp_buffer->control_angle_reverse = tmp_angle;
     math_endian_reverse_16(&tmp_buffer->control_angle_reverse);
@@ -102,25 +111,37 @@ void MotorCubemars::Output() {
     tmp_buffer->k_d_3_0_control_torque_11_8 = ((tmp_k_d & 0x0f) << 4) | (tmp_torque >> 8);
     tmp_buffer->control_torque_7_0 = tmp_torque & 0xff;
     can_send_data(can_manage_object_->can_handler, can_tx_id_, tx_data_, 8);
-
 }
 
 void MotorCubemars::DataProcess()
 {
+
     // 数据处理过程
     int32_t delta_encoder;
     uint16_t tmp_encoder, tmp_omega, tmp_torque;
     MotorCubemarsCanRxData *tmp_buffer = (MotorCubemarsCanRxData *)can_manage_object_->rx_buffer.data;
 
-    // 电机ID不匹配, 则不进行处理
-    if(tmp_buffer->can_id != (can_tx_id_ & 0x0f))
-    {
-        return;
-    }
 
     // 处理大小端（就地翻转，避免重载匹配问题）
     math_endian_reverse_16((void *)&tmp_buffer->angle_reverse);
     tmp_encoder = tmp_buffer->angle_reverse;
+
+    // 首帧：只初始化解包/展开状态，避免用 pre_encoder=0 造成“误判跨圈”
+    if (!rx_inited_) {
+        rx_inited_ = true;
+        rx_data_.pre_encoder = tmp_encoder;
+        rx_data_.total_round = 0;
+        rx_data_.total_encoder = static_cast<int32_t>(tmp_encoder) - ((1 << 15) - 1);
+
+        tmp_omega = (tmp_buffer->omega_11_4 << 4) | (tmp_buffer->omega_3_0_torque_11_8 >> 4);
+        tmp_torque = ((tmp_buffer->omega_3_0_torque_11_8 & 0x0f) << 8) | (tmp_buffer->torque_7_0);
+
+        rx_data_.now_angle_noncumulative = ((float)((tmp_encoder / 65535.0f) * (angle_max_ * 2.0f)) - angle_max_);
+        rx_data_.now_angle = (float)(rx_data_.total_encoder) / (float)((1 << 16) - 1) * angle_max_ * 2.0f;
+        rx_data_.now_omega = math_int_to_float(tmp_omega, 0, (1 << 12) - 1, -omega_max_, omega_max_);
+        rx_data_.now_torque = math_int_to_float(tmp_torque, 0, (1 << 12) - 1, -torque_max_, torque_max_);
+        return;
+    }
 
     tmp_omega = (tmp_buffer->omega_11_4 << 4) | (tmp_buffer->omega_3_0_torque_11_8 >> 4);
     tmp_torque = ((tmp_buffer->omega_3_0_torque_11_8 & 0x0f) << 8) | (tmp_buffer->torque_7_0);
@@ -142,8 +163,8 @@ void MotorCubemars::DataProcess()
     // 计算电机本身信息
     rx_data_.now_angle_noncumulative = ((float)((tmp_encoder / 65535.0f) * (angle_max_ * 2.0f)) - angle_max_);
     rx_data_.now_angle = (float)(rx_data_.total_encoder) / (float)((1 << 16) - 1) * angle_max_ * 2.0f;
-    rx_data_.now_omega = math_int_to_float(tmp_omega, 0x7ff, (1 << 12) - 1, 0, omega_max_);
-    rx_data_.now_torque = math_int_to_float(tmp_torque, 0x7ff, (1 << 12) - 1, 0, torque_max_);
+    rx_data_.now_omega = math_int_to_float(tmp_omega, 0, (1 << 12) - 1, -omega_max_, omega_max_);
+    rx_data_.now_torque = math_int_to_float(tmp_torque, 0, (1 << 12) - 1, -torque_max_, torque_max_);
 
     // 存储预备信息
     rx_data_.pre_encoder = tmp_encoder;
