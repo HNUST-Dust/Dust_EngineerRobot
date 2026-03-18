@@ -196,13 +196,23 @@ void VT03::Data_Process(uint16_t Length)
             Data.Right_X = -0.99f;
         }
         Data.Right_Y = (tmp_buffer->Channel_1 - Rocker_Offset) / Rocker_Num; // 右摇杆竖直
-        if(Data.Right_X > 0.99f){
-            Data.Right_X = 0.99f;
-        }else if(Data.Right_X < -0.99f){
-            Data.Right_X = -0.99f;
+        if(Data.Right_Y > 0.99f){
+            Data.Right_Y = 0.99f;
+        }else if(Data.Right_Y < -0.99f){
+            Data.Right_Y = -0.99f;
         }
         Data.Left_X = (tmp_buffer->Channel_2 - Rocker_Offset) / Rocker_Num;  // 左摇杆竖直
+        if(Data.Left_X > 0.99f){
+            Data.Left_X = 0.99f;
+        }else if(Data.Left_X < -0.99f){
+            Data.Left_X = -0.99f;
+        }
         Data.Left_Y = (tmp_buffer->Channel_3 - Rocker_Offset) / Rocker_Num;  // 左摇杆水平
+        if(Data.Left_Y > 0.99f){
+            Data.Left_Y = 0.99f;
+        }else if(Data.Left_Y < -0.99f){
+            Data.Left_Y = -0.99f;
+        }
 
         // 自定义按键信息
         _Judge_Key(&Data.Left_Key, tmp_buffer->Fn_1, Pre_UART_Rx_Data.Fn_1);
@@ -250,7 +260,13 @@ void VT03::Data_Process(uint16_t Length)
 
         // 保留数据
         memcpy(&Pre_UART_Rx_Data, tmp_buffer, 21 * sizeof(uint8_t));
-    }else{
+    } else if (tmp_buffer->Start_Of_Frame_1 == 0xA5) {
+        vt03::CustomControllerData *custom = (vt03::CustomControllerData *)UART_Manage_Object->rx_buffer;
+        if (custom->cmd_id == vt03::kCustomControllerDataId &&
+            Verify_CRC16_Check_Sum(UART_Manage_Object->rx_buffer, Length)) {
+            memcpy(&ControllerData, custom->data, sizeof(vt03::Data));
+        }
+    } else {
         // Data.Right_X = 0.0f;
         // Data.Right_Y = 0.0f;
         // Data.Left_X = 0.0f;

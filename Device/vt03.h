@@ -34,8 +34,38 @@
 #define VT03_KEY_V 14
 #define VT03_KEY_B 15
 
-/* Exported types ------------------------------------------------------------*/
 
+namespace vt03 {
+struct FrameHeader
+{
+    uint8_t sof;                // 帧头标志 0xA5
+    uint16_t data_length;
+    uint8_t seq;
+    uint8_t crc8;
+}__attribute__((packed));
+
+struct Data 
+{
+    float angle1{0.0f};
+    float angle2{0.0f};
+    float angle3{0.0f};
+    float angle4{0.0f};
+    uint8_t buttons{0};
+    float joystick_x{0.0f};
+    float joystick_y{0.0f};
+    float joystick_z{0.0f};
+    uint8_t reserved{0};
+} __attribute__((packed));
+
+constexpr size_t kDataLength = 30;
+struct CustomControllerData {
+    FrameHeader frame_header;
+    uint16_t cmd_id;
+    uint8_t data[kDataLength];
+    uint16_t frame_tail;        // 帧尾CRC16校验
+} __attribute__((packed));
+static constexpr uint16_t kCustomControllerDataId = 0x0302;
+}
 /**
  * @brief VT03源数据
  *
@@ -169,6 +199,8 @@ public:
         127,
     };
 
+    vt03::Data ControllerData;
+
     void Init(UART_HandleTypeDef *huart);
 
     inline VT03Status GetStatus();
@@ -262,13 +294,6 @@ protected:
 
     // 遥控器VT03状态
     VT03Status VT03_Status = VT03_Status_DISABLE;
-
-
-    // 写变量
-
-    // 读写变量
-
-    // 内部函数
 
     uint16_t Get_CRC16_Check_Sum(uint8_t *P_Msg, uint16_t Length, uint16_t CRC16);
 
