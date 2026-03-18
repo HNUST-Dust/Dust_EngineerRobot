@@ -3,6 +3,7 @@
 #include "bsp_usart.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "cmsis_os2.h"
 Robot robot;
 
 void uart7_debug_callback(uint8_t *buffer, uint16_t length)
@@ -57,7 +58,7 @@ void can2_callback(CanRxBuffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->header.Identifier)
     {
-        case (0x00):
+        case (0x000):
         {
             robot.gantry_.motor_z_axis_left_.CanRxCpltCallback(CAN_RxMessage->data);
             break;
@@ -132,6 +133,7 @@ void startup_thread(void *argument)
     // CAN3 初始化，控制机械臂
     can_init(&hfdcan3,can3_callback);
 
+    osDelay(pdMS_TO_TICKS(3000)); // 等待外设稳定
     robot.Init();
 
     vTaskDelete(NULL);
