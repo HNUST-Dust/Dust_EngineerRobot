@@ -23,10 +23,17 @@ public:
     void YAxisMoveInSpeed(float speed);
     void ZAxisMoveInSpeed(float speed);
     
-    static constexpr float Z_AXIS_SENSITIVITY = 0.002f;
+    static constexpr float Z_AXIS_SENSITIVITY = 0.01f;
 
 private:
+    alg::Pid z_left_pid_angle_;
+    alg::Pid z_right_pid_angle_;
+    // Z 轴控制量统一使用“距离”（单位与 virtual_z_distance_ / Z_AXIS_DISTANCE_LIMIT 保持一致）
+    float z_target_distance_ = 0.0f;
 
+    // 距离->电机角度(rad) 换算系数：rad = distance * Z_AXIS_RAD_PER_DISTANCE
+    // TODO: 按丝杆导程/减速比等实际机构标定该值
+    static constexpr float Z_AXIS_RAD_PER_DISTANCE = 1.0f;
     static constexpr float X_AXIS_DISTANCE_LIMIT = 10.0f; // distance
     static constexpr float Y_AXIS_DISTANCE_LIMIT = 10.0f; // distance
     static constexpr float Z_AXIS_DISTANCE_LIMIT = 5.0f;  // distance

@@ -6,6 +6,18 @@
 #include "projdefs.h"
 
 void Gantry::Init() {
+    {
+        alg::PidConfig cfg;
+        cfg.kp = 20.0f;
+        cfg.ki = 0.1f;
+        cfg.kd = 0.1f;
+        cfg.kf = 0.0f;
+        cfg.i_out_max = 29.0f;
+        cfg.out_max = 50.0f; // omega_ref(rad/s)
+        cfg.dt = 0.01f;
+        z_left_pid_angle_.configure(cfg);
+        z_right_pid_angle_.configure(cfg);
+    }
 
     motor_z_axis_left_.Init(&hfdcan2,0x00,0x01,ANGLE_CONTROL);
     motor_z_axis_right_.Init(&hfdcan1,0x00,0x01,ANGLE_CONTROL);
@@ -44,11 +56,14 @@ void Gantry::Init() {
     motor_y_axis_.Init(&hfdcan3, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_OMEGA);
 
     motor_z_axis_left_.CanSendSaveZero();
+    osDelay(pdMS_TO_TICKS(1000));
     motor_z_axis_right_.CanSendSaveZero(); 
     osDelay(pdMS_TO_TICKS(1000));
 
     motor_z_axis_left_.CanSendEnter();
+    osDelay(pdMS_TO_TICKS(1000));
     motor_z_axis_right_.CanSendEnter();
+    osDelay(pdMS_TO_TICKS(1000));
 
     static const osThreadAttr_t kGantryTaskAttr = {
         .name = "gantry_task",
@@ -93,9 +108,8 @@ void Gantry::YAxisMoveInDistance(float distance) {
 }
 
 void Gantry::ZAxisMoveInDistance(float distance) {
-    distance = Clamp(distance, -Z_AXIS_DISTANCE_LIMIT, Z_AXIS_DISTANCE_LIMIT);
-    motor_z_axis_left_.SetAngle(distance);
-    motor_z_axis_right_.SetAngle(-distance);
+    distance = Clamp(distance, -Z_AXIS_DISTANCE_LIMIT, 0);
+    z_target_distance_ = distance;
 }
 
 void Gantry::XAxisMoveInSpeed(float speed) {
@@ -111,8 +125,9 @@ void Gantry::YAxisMoveInSpeed(float speed) {
 
 void Gantry::ZAxisMoveInSpeed(float speed) {
     speed = Clamp(speed, -Z_AXIS_SPEED_LIMIT, Z_AXIS_SPEED_LIMIT);
-    motor_z_axis_left_.SetOmega(-speed);
-    motor_z_axis_right_.SetOmega(speed);
+    const float omega = speed * Z_AXIS_RAD_PER_DISTANCE;
+    motor_z_axis_left_.SetOmega(-omega);
+    motor_z_axis_right_.SetOmega(+omega);
 }
 
 void Gantry::Task() {
@@ -124,10 +139,21 @@ void Gantry::Task() {
         motor_y_axis_.CalculatePeriodElapsedCallback();
         //can_send_data(&hfdcan3, 0x200, g_can3_0x200_tx_data, 8);
         
+        // ---- Z axis (Cubemars) ----
+        {
+            const float now_angle = motor_z_axis_left_.GetAngle();
+            const float target_angle = -(z_target_distance_ * Z_AXIS_RAD_PER_DISTANCE);
+            const float omega_ref = z_left_pid_angle_.update(target_angle, now_angle);
+            motor_z_axis_left_.SetOmega(omega_ref);
+        }
+        {
+            const float now_angle = motor_z_axis_right_.GetAngle();
+            const float target_angle = +(z_target_distance_ * Z_AXIS_RAD_PER_DISTANCE);
+            const float omega_ref = z_right_pid_angle_.update(target_angle, now_angle);
+            motor_z_axis_right_.SetOmega(omega_ref);
+        }
         motor_z_axis_left_.CalculatePeriodElapsedCallback();
-        motor_z_axis_left_.CanSendEnter();
         motor_z_axis_right_.CalculatePeriodElapsedCallback();
-        motor_z_axis_right_.CanSendEnter();
 
         osDelay(pdMS_TO_TICKS(10)); // 100Hz
     }
