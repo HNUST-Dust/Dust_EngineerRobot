@@ -26,6 +26,7 @@
 // algorithm
 #include "math/alg_math.h"
 #include <cmath>
+#include "utils/alg_constrain.h"
 
 void Robot::Init()
 {
@@ -93,6 +94,8 @@ void Robot::Task()
                     gantry_.YAxisMoveInSpeed(dr16_.GetData()->left_stick_x * 10.f);
                     // gantry_.ZAxisMoveInSpeed(dr16_.GetData()->right_stick_y * 10.f);
                     gantry_.virtual_z_distance_ -= dr16_.GetData()->right_stick_y * gantry_.Z_AXIS_SENSITIVITY;
+                    math_constrain(&gantry_.virtual_z_distance_, -gantry_.Z_AXIS_DISTANCE_LIMIT, 0.0f);
+
                     gantry_.ZAxisMoveInDistance(gantry_.virtual_z_distance_);
             
                     break;
@@ -106,7 +109,7 @@ void Robot::Task()
             static constexpr uint8_t kButton4Mask = 1u << 3;
             static constexpr uint8_t kJoystickButtonMask = 1u << 4;
             static constexpr float kClawToggleAngle = 0.5f;
-            static constexpr float kClawSlewRatePerSec = 1.0f;
+            static constexpr float kClawSlewRatePerSec = 1.5f;
             static constexpr float kLoopPeriodSec = 0.001f;
 
             static bool claw_closed = false;
@@ -140,24 +143,35 @@ void Robot::Task()
             switch (buttons) {
                 case kButton1Mask:
                     // BUTTON1 单独按下
-                    chassis_.SetTargetVxInChassis(+ vt03_.ControllerData.joystick_x * kChassisSpeed);
-                    chassis_.SetTargetVyInChassis(- vt03_.ControllerData.joystick_y * kChassisSpeed);
+                    chassis_.SetTargetVxInChassis(- vt03_.ControllerData.joystick_x * kChassisSpeed);
+                    chassis_.SetTargetVyInChassis(+ vt03_.ControllerData.joystick_y * kChassisSpeed);
                     chassis_.SetTargetVelocityRotation(+ vt03_.ControllerData.joystick_z * kChassisSpeed);
                     break;
                 case kButton2Mask:
                     // BUTTON2 单独按下
-                    gantry_.XAxisMoveInSpeed(vt03_.ControllerData.joystick_x * 0.001f);
-                    gantry_.YAxisMoveInSpeed(vt03_.ControllerData.joystick_y * 0.001f);
-                    gantry_.virtual_z_distance_ += vt03_.ControllerData.joystick_z * 0.000001;
+                    gantry_.XAxisMoveInSpeed(-vt03_.ControllerData.joystick_y * 5.0f);
+                    gantry_.YAxisMoveInSpeed(-vt03_.ControllerData.joystick_x * 5.0f);
+                    gantry_.virtual_z_distance_ -= vt03_.ControllerData.joystick_z * 0.008f;
+                    math_constrain(&gantry_.virtual_z_distance_, -gantry_.Z_AXIS_DISTANCE_LIMIT, 0.0f);
                     gantry_.ZAxisMoveInDistance(gantry_.virtual_z_distance_);                    
                     break;
                 case kButton3Mask:
                     // BUTTON3 单独按下
+                    twist = vt03_.ControllerData.joystick_y * arm_.kWristSensitivity; // 正为向右扭转
+                    flip = vt03_.ControllerData.joystick_z * arm_.kWristSensitivity; // 正为向上翻转
+                    arm_.ControlWristByTwistFlip(twist, flip);
+
                     break;
                 case kButton4Mask:
                     // BUTTON4 单独按下
                     break;
                 default:
+                    chassis_.SetTargetVxInChassis(0.0f);
+                    chassis_.SetTargetVyInChassis(0.0f);
+                    chassis_.SetTargetVelocityRotation(0.0f);
+                    gantry_.XAxisMoveInSpeed(0.0f);
+                    gantry_.YAxisMoveInSpeed(0.0f);
+
                     break;
             }
 
@@ -165,7 +179,7 @@ void Robot::Task()
             math_constrain(&arm_.claws_virtual_angle_, -0.5f, 0.5f);
             arm_.ControlClaw(arm_.claws_virtual_angle_);
 
-            arm_.elbow_pitch_joint_virtual_angle_ = vt03_.ControllerData.angle2;
+            arm_.elbow_pitch_joint_virtual_angle_ = -vt03_.ControllerData.angle1;
             arm_.ControlElbowPitchJoint(arm_.elbow_pitch_joint_virtual_angle_);
 
             arm_.elbow_yaw_joint_virtual_angle_ = vt03_.ControllerData.angle3;
@@ -173,10 +187,15 @@ void Robot::Task()
         }
 
         /********************** 调试信息 ***********************/
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle1);
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle2);
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle3);
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle4);
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_x);
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_y);
+        debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_z);
+        debug_tools_.VofaSendFloat((float)vt03_.ControllerData.buttons);
         debug_tools_.VofaSendFloat(gantry_.virtual_z_distance_);
-        debug_tools_.VofaSendFloat(gantry_.motor_z_axis_left_.GetOmega());
-        debug_tools_.VofaSendFloat(gantry_.motor_z_axis_left_.GetAngle());
-        debug_tools_.VofaSendFloat(gantry_.motor_z_axis_left_.GetTorque());
         // 调试帧尾部
         debug_tools_.VofaSendTail();
 
