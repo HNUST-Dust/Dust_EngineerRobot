@@ -309,6 +309,42 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
+    if (huart->Instance == USART1) {
+        g_uart1_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == USART2) {
+        g_uart2_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == USART3) {
+        g_uart3_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == UART4) {
+        g_uart4_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == UART5) {
+        g_uart5_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == USART6) {
+        g_uart6_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == UART7) {
+        g_uart7_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == UART8) {
+        g_uart8_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
+    else if (huart->Instance == USART10) {
+        g_uart10_manage_object.tx_cplt_flag = true;
+        uart_reinit(huart);
+    }
     if (huart == &huart7) {
         g_uart7_manage_object.tx_cplt_flag = true;
     }

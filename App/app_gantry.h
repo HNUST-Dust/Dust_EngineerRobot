@@ -24,6 +24,7 @@ public:
     void ZAxisMoveInSpeed(float speed);
     
     static constexpr float Z_AXIS_SENSITIVITY = 0.01f;
+    static constexpr float Z_AXIS_DISTANCE_LIMIT = 5.0f;  // distance
 
 private:
     alg::Pid z_left_pid_angle_;
@@ -36,7 +37,6 @@ private:
     static constexpr float Z_AXIS_RAD_PER_DISTANCE = 1.0f;
     static constexpr float X_AXIS_DISTANCE_LIMIT = 10.0f; // distance
     static constexpr float Y_AXIS_DISTANCE_LIMIT = 10.0f; // distance
-    static constexpr float Z_AXIS_DISTANCE_LIMIT = 5.0f;  // distance
 
     static constexpr float X_AXIS_SPEED_LIMIT = 20.0f; // speed
     static constexpr float Y_AXIS_SPEED_LIMIT = 20.0f; // speed

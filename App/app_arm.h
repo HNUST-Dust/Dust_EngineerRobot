@@ -16,7 +16,7 @@ public:
     constexpr static float kClawsSensitivity = 0.001f;
     float claws_virtual_angle_ = 0.0f;
 
-    constexpr static float kWristSensitivity = 0.002f;
+    constexpr static float kWristSensitivity = 0.004f;
     float wrist_joint_left_virtual_angle_ = 0.0f;
     float wrist_joint_right_virtual_angle_ = 0.0f;
 

@@ -7,10 +7,10 @@ void Chassis::Init()
 {
     // debug_tools_ .VofaInit();
     // 3508电机初始化
-    motor_chassis_1_.pid_omega_.Init(1.0f,0.0f,0.0f);
-    motor_chassis_2_.pid_omega_.Init(1.0f,0.0f,0.0f);
-    motor_chassis_3_.pid_omega_.Init(1.0f,0.0f,0.0f);
-    motor_chassis_4_.pid_omega_.Init(1.0f,0.0f,0.0f);
+    motor_chassis_1_.pid_omega_.Init(3.0f,0.2f,0.0f);
+    motor_chassis_2_.pid_omega_.Init(3.0f,0.2f,0.0f);
+    motor_chassis_3_.pid_omega_.Init(3.0f,0.2f,0.0f);
+    motor_chassis_4_.pid_omega_.Init(3.0f,0.2f,0.0f);
 
     motor_chassis_1_.Init(&hfdcan1, MOTOR_DJI_ID_0x201, MOTOR_DJI_CONTROL_METHOD_OMEGA);
     motor_chassis_2_.Init(&hfdcan1, MOTOR_DJI_ID_0x202, MOTOR_DJI_CONTROL_METHOD_OMEGA);

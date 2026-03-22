@@ -20,6 +20,9 @@
 // module
 #include "debug_tools.h"
 
+// board
+#include "usart.h"
+
 // bsp
 #include "bsp_dwt.h"
 
@@ -27,6 +30,7 @@
 #include "math/alg_math.h"
 #include <cmath>
 #include "utils/alg_constrain.h"
+#include "app_gimbal.h"
 
 void Robot::Init()
 {
@@ -38,6 +42,8 @@ void Robot::Init()
     // dr16初始化
     dr16_.Init();
     vt03_.Init(&huart10);
+    // 云台初始化（内部会初始化舵机总线），使用 UART1
+    gimbal_.Init(&huart1);
     // 底盘初始化
     chassis_.Init();
     // 手臂初始化
@@ -58,6 +64,9 @@ void Robot::TaskEntry(void *argument)
     Robot *self = static_cast<Robot *>(argument);
     self->Task();
 }
+
+// Robot 不再实现云台控制，转由 Gimbal 管理
+
 
 void Robot::Task()
 {
@@ -145,25 +154,28 @@ void Robot::Task()
                     // BUTTON1 单独按下
                     chassis_.SetTargetVxInChassis(- vt03_.ControllerData.joystick_x * kChassisSpeed);
                     chassis_.SetTargetVyInChassis(+ vt03_.ControllerData.joystick_y * kChassisSpeed);
-                    chassis_.SetTargetVelocityRotation(+ vt03_.ControllerData.joystick_z * kChassisSpeed);
+                    chassis_.SetTargetVelocityRotation(+ 0.5f * vt03_.ControllerData.joystick_z * kChassisSpeed);
                     break;
                 case kButton2Mask:
                     // BUTTON2 单独按下
                     gantry_.XAxisMoveInSpeed(-vt03_.ControllerData.joystick_y * 5.0f);
-                    gantry_.YAxisMoveInSpeed(-vt03_.ControllerData.joystick_x * 5.0f);
+                    // gantry_.YAxisMoveInSpeed(-vt03_.ControllerData.joystick_x * 5.0f);
                     gantry_.virtual_z_distance_ -= vt03_.ControllerData.joystick_z * 0.008f;
                     math_constrain(&gantry_.virtual_z_distance_, -gantry_.Z_AXIS_DISTANCE_LIMIT, 0.0f);
                     gantry_.ZAxisMoveInDistance(gantry_.virtual_z_distance_);                    
                     break;
                 case kButton3Mask:
                     // BUTTON3 单独按下
-                    twist = vt03_.ControllerData.joystick_y * arm_.kWristSensitivity; // 正为向右扭转
-                    flip = vt03_.ControllerData.joystick_z * arm_.kWristSensitivity; // 正为向上翻转
+                    twist = -vt03_.ControllerData.joystick_y * arm_.kWristSensitivity; // 正为向右扭转
+                    flip = -vt03_.ControllerData.joystick_z * arm_.kWristSensitivity; // 正为向上翻转
                     arm_.ControlWristByTwistFlip(twist, flip);
 
                     break;
                 case kButton4Mask:
                     // BUTTON4 单独按下
+                    chassis_.SetTargetVxInChassis(- 0.3f * vt03_.ControllerData.joystick_x * kChassisSpeed);
+                    chassis_.SetTargetVyInChassis(+ 0.3f * vt03_.ControllerData.joystick_y * kChassisSpeed);
+                    chassis_.SetTargetVelocityRotation(+ 0.2f * vt03_.ControllerData.joystick_z * kChassisSpeed);
                     break;
                 default:
                     chassis_.SetTargetVxInChassis(0.0f);
@@ -187,15 +199,24 @@ void Robot::Task()
         }
 
         /********************** 调试信息 ***********************/
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle1);
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle2);
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle3);
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.angle4);
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_x);
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_y);
-        debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_z);
-        debug_tools_.VofaSendFloat((float)vt03_.ControllerData.buttons);
-        debug_tools_.VofaSendFloat(gantry_.virtual_z_distance_);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.angle1);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.angle2);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.angle3);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.angle4);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_x);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_y);
+        // debug_tools_.VofaSendFloat(vt03_.ControllerData.joystick_z);
+        // debug_tools_.VofaSendFloat((float)vt03_.ControllerData.buttons);
+        // debug_tools_.VofaSendFloat(gantry_.virtual_z_distance_);
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_1_.GetNowOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_1_.GetTargetOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_2_.GetNowOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_2_.GetTargetOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_3_.GetNowOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_3_.GetTargetOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_4_.GetNowOmega());
+        // debug_tools_.VofaSendFloat(chassis_.motor_chassis_4_.GetTargetOmega());
+        debug_tools_.VofaSendFloat(gimbal_.GetYawID());
         // 调试帧尾部
         debug_tools_.VofaSendTail();
 
