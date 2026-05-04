@@ -139,7 +139,7 @@ static void can3_port_callback(const BspCanFrame* frame)
 }
 
 void bsp_bringup(void)
-{
+{ 
     dwt_init(480);
 
     // UART 初始化：用 bsp_uart_port
