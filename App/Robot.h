@@ -9,7 +9,10 @@
 #include "debug_tools.h"
 #include "dr16.h"
 #include "vt03.h"
+#include "dvc_pwm_servo.h"
 
+#include "stm32h7xx_hal_tim.h"
+#include "tim.h"
 
 static constexpr float kChassisSpeed = 20.0f;
 static constexpr float kChassisSpinSpeed = 30.0f;
@@ -24,13 +27,16 @@ public:
     DR16 dr16_;
     VT03 vt03_;
     // 云台
-    Gimbal gimbal_;
+    // Gimbal gimbal_;
     // 底盘
     Chassis chassis_;
     // 龙门架
     Gantry gantry_;
     // 机械臂
     Arm arm_;
+
+    DvcPwmServo pitch_servo_{&htim1, TIM_CHANNEL_1, 0.5f, 2.5f, 180.0f, 20.0f};
+    DvcPwmServo yaw_servo_{&htim1, TIM_CHANNEL_3, 0.5f, 2.5f, 270.0f, 20.0f};
 
     void Init();
     void Task();

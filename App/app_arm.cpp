@@ -69,7 +69,7 @@ void Arm::Init() {
     {
         alg::PidConfig cfg;
         cfg.kp = 1.0f;
-        cfg.ki = 0.0f;
+        cfg.ki = 0.05f;
         cfg.kd = 0.0f;
         cfg.kf = 0.0f;
         cfg.i_out_max = 9.0f;
@@ -99,7 +99,7 @@ void Arm::Init() {
     {
         alg::PidConfig cfg;
         cfg.kp = 1.0f;
-        cfg.ki = 0.0f;
+        cfg.ki = 0.05f;
         cfg.kd = 0.0f;
         cfg.kf = 0.0f;
         cfg.i_out_max = 9.0f;

@@ -6,10 +6,10 @@
 #include "cmsis_os2.h"
 Robot robot;
 
-void uart1_callback(uint8_t *buffer, uint16_t length)
-{
-    robot.gimbal_.servo_bus_.ServoBus_UartCallback(buffer, length);
-}
+// void uart1_callback(uint8_t *buffer, uint16_t length)
+// {
+//     robot.gimbal_.servo_bus_.ServoBus_UartCallback(buffer, length);
+// }
 
 void uart7_debug_callback(uint8_t *buffer, uint16_t length)
 {
@@ -126,7 +126,7 @@ void can3_callback(CanRxBuffer *CAN_RxMessage)
 void startup_thread(void *argument)
 {
     // UART1 初始化，云台舵机总线
-    uart_init(&huart1, uart1_callback, UART_BUFFER_SIZE); 
+    // uart_init(&huart1, uart1_callback, UART_BUFFER_SIZE); 
     // UART5 初始化，DR16接收机
     uart_init(&huart5, uart5_debug_callback, UART_BUFFER_SIZE);
     // USART7 初始化，调试

@@ -10,11 +10,14 @@
  */
 // app
 #include "Robot.h"
+#include "VT03.h"
 #include "app_chassis.h"
 #include "app_arm.h"
 #include "app_gantry.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
+#include "stm32h723xx.h"
+#include "stm32h7xx_hal_gpio.h"
 #include "task.h"
 
 // module
@@ -25,7 +28,9 @@
 
 // bsp
 #include "bsp_dwt.h"
+#include "gpio.h"
 
+#include "dvc_pwm_servo.h"
 // algorithm
 #include "math/alg_math.h"
 #include <cmath>
@@ -43,13 +48,19 @@ void Robot::Init()
     dr16_.Init();
     vt03_.Init(&huart10);
     // 云台初始化（内部会初始化舵机总线），使用 UART1
-    gimbal_.Init(&huart1);
+    // gimbal_.Init(&huart1);
+    
     // 底盘初始化
     chassis_.Init();
     // 手臂初始化
     arm_.Init();
     // 龙门架初始化
     gantry_.Init();
+
+    // 云台舵机初始化
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_15, GPIO_PIN_SET);
+    pitch_servo_.begin();
+    yaw_servo_.begin();
 
     static const osThreadAttr_t kRobotTaskAttr = {
         .name = "robot_task",
@@ -72,6 +83,10 @@ void Robot::Task()
 {
     float twist = 0.f; // 正为向右扭转
     float flip = 0.f; // 正为向上翻转
+
+    float virtual_pitch_angle = 0.f;
+    float virtual_yaw_angle = 0.f;
+    
     for (;;) {
         if (dr16_.GetData()->right_switch == 1) {
             switch (dr16_.GetData()->left_switch) {
@@ -166,8 +181,8 @@ void Robot::Task()
                     break;
                 case kButton3Mask:
                     // BUTTON3 单独按下
-                    twist = -vt03_.ControllerData.joystick_y * arm_.kWristSensitivity; // 正为向右扭转
-                    flip = -vt03_.ControllerData.joystick_z * arm_.kWristSensitivity; // 正为向上翻转
+                    twist = -vt03_.ControllerData.joystick_y * arm_.kWristSensitivity; // 正为向上扭转
+                    flip = -vt03_.ControllerData.joystick_z * arm_.kWristSensitivity; // 正为向翻转
                     arm_.ControlWristByTwistFlip(twist, flip);
 
                     break;
@@ -198,6 +213,25 @@ void Robot::Task()
             arm_.ControlElbowYawJoint(arm_.elbow_yaw_joint_virtual_angle_);
         }
 
+        // 键盘控制云台
+        if(vt03_.Data.Keyboard_Key[VT03_KEY_W] == VT03_Key_Status_PRESSED) 
+        {
+            virtual_pitch_angle += 0.1f;
+        }else if(vt03_.Data.Keyboard_Key[VT03_KEY_S] == VT03_Key_Status_PRESSED) {
+            virtual_pitch_angle -= 0.1f;
+        }
+
+        if(vt03_.Data.Keyboard_Key[VT03_KEY_A] == VT03_Key_Status_PRESSED) 
+        {
+            virtual_yaw_angle -= 0.1f;
+        }else if(vt03_.Data.Keyboard_Key[VT03_KEY_D] == VT03_Key_Status_PRESSED) {
+            virtual_yaw_angle += 0.1f;
+        }
+
+        // pitch_servo_.writeAngle(90.0f + virtual_pitch_angle); // 以 90 度为中心，向上为正
+        // yaw_servo_.writeAngle(90.0f + virtual_yaw_angle); //
+        pitch_servo_.writeAngle(0.0f); // 以 90 度为中心，向上为正
+        yaw_servo_.writeAngle(0.0f); // 以 90 度为中心，向右为正
         /********************** 调试信息 ***********************/
         // debug_tools_.VofaSendFloat(vt03_.ControllerData.angle1);
         // debug_tools_.VofaSendFloat(vt03_.ControllerData.angle2);
@@ -216,7 +250,6 @@ void Robot::Task()
         // debug_tools_.VofaSendFloat(chassis_.motor_chassis_3_.GetTargetOmega());
         // debug_tools_.VofaSendFloat(chassis_.motor_chassis_4_.GetNowOmega());
         // debug_tools_.VofaSendFloat(chassis_.motor_chassis_4_.GetTargetOmega());
-        debug_tools_.VofaSendFloat(gimbal_.GetYawID());
         // 调试帧尾部
         debug_tools_.VofaSendTail();
 
